@@ -226,22 +226,25 @@ Operator& Expr::front(){
 }
 
 double Expr::getConstantValue()const { 
-    return ops[(isConstant())?(0):(1)].getValue(); 
+    auto iter = ops.begin();
+    if (not isConstant())
+        iter++;
+    return iter->getValue();
 }
 
-const deque<Operator>::const_iterator Expr::begin()const {
+const list<Operator>::const_iterator Expr::begin()const {
     return ops.begin(); 
 }
 
-const deque<Operator>::const_iterator Expr::end()const {
+const list<Operator>::const_iterator Expr::end()const {
     return ops.end(); 
 }
 
-deque<Operator>::iterator Expr::begin(){
+list<Operator>::iterator Expr::begin(){
     return ops.begin(); 
 } 
 
-deque<Operator>::iterator Expr::end(){
+list<Operator>::iterator Expr::end(){
     return ops.end(); 
 }
 
@@ -249,7 +252,7 @@ Idx Expr::size()const {
     return ops.size(); 
 }
 
-const deque<Operator>& Expr::getOps()const {
+const list<Operator>& Expr::getOps()const {
     return ops; 
 } 
 
@@ -259,7 +262,7 @@ double Expr::x()const {
     return x(iter); 
 }
 
-string Expr::toString(deque<Operator>::const_iterator& iter)const {
+string Expr::toString(list<Operator>::const_iterator& iter)const {
     string res;
     const Operator& op = *iter;
     switch(iter->getType()){
@@ -292,9 +295,10 @@ string Expr::toString(deque<Operator>::const_iterator& iter)const {
         default:
           assert(false);
   }
+    return "false";
 }
 
-string Expr::toStringEnclosed(deque<Operator>::const_iterator& iter)const{
+string Expr::toStringEnclosed(list<Operator>::const_iterator& iter)const{
     const OPType& t = iter->getType();
     if (t == OP_VAR_POINTER || t == OP_PARAM_POINTER ||
             t == OP_CONST || t == OP_MUL || t == OP_SIN || t == OP_COS || t == OP_TAN)
@@ -302,7 +306,7 @@ string Expr::toStringEnclosed(deque<Operator>::const_iterator& iter)const{
     return "(" + toString(iter) + ")";
 }
 
-string Expr::getContent(deque<Operator>::const_iterator& iter,
+string Expr::getContent(list<Operator>::const_iterator& iter,
         string delimeter)const {
     const Operator& op = *iter;
     string res = toStringEnclosed(++iter);
@@ -315,7 +319,10 @@ inline Expr& Expr::addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool o
     if (x) return *this;
     if (y){ *this = a; return *this; }
     int offset = inner(a, type, op);
-    ops.insert(ops.end(), a.begin()+offset, a.end());
+    auto iter = a.begin();
+    for (int i=0; i<offset; i++)
+        iter++;
+    ops.insert(ops.end(), iter, a.end());
     return *this;
 }
 
@@ -323,8 +330,11 @@ inline Expr& Expr::addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op){
     if (x) return *this;
     if (y){ *this = a; return *this; }
     int offset = inner(a, type, op);
+    auto iter = make_move_iterator(a.begin());
+    for (int i=0; i<offset; i++)
+        iter++;
     ops.insert(ops.end(),
-            make_move_iterator(a.begin())+offset,
+            iter,
             make_move_iterator(a.end()));
     return *this;
 }
@@ -344,7 +354,7 @@ inline int Expr::inner(const Expr& a, OPType& type, bool& op){
     return offset;
 }
 
-double Expr::x(deque<Operator>::const_iterator& iter)const {
+double Expr::x(list<Operator>::const_iterator& iter)const {
     double tmp = 0.;
     const Operator& op = *iter;
     switch(iter->getType()){

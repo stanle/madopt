@@ -17,7 +17,7 @@
 #define MADOPT_EXPR_H
 
 #include "operator.hpp"
-#include <deque>
+#include <list>
 #include <set>
 
 namespace MadOpt {
@@ -114,30 +114,30 @@ class Expr{
 
         double getConstantValue()const; 
 
-        const deque<Operator>::const_iterator begin()const; 
+        const list<Operator>::const_iterator begin()const; 
 
-        const deque<Operator>::const_iterator end()const; 
+        const list<Operator>::const_iterator end()const; 
 
-        deque<Operator>::iterator begin(); 
+        list<Operator>::iterator begin(); 
 
-        deque<Operator>::iterator end();
+        list<Operator>::iterator end();
 
         Idx size()const; 
 
-        const deque<Operator>& getOps()const ; 
+        const list<Operator>& getOps()const ; 
 
         //! evaluate the expression using the values from the solution
         double x()const; 
 
     protected:
 
-        deque<Operator> ops;
+        list<Operator> ops;
 
-        string toString(deque<Operator>::const_iterator& iter)const; 
+        string toString(list<Operator>::const_iterator& iter)const; 
 
-        string toStringEnclosed(deque<Operator>::const_iterator& iter)const;
+        string toStringEnclosed(list<Operator>::const_iterator& iter)const;
 
-        string getContent(deque<Operator>::const_iterator& iter,
+        string getContent(list<Operator>::const_iterator& iter,
                 string delimeter)const;
 
         inline Expr& addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool op);
@@ -146,7 +146,7 @@ class Expr{
 
         inline int inner(const Expr& a, OPType& type, bool& op);
 
-        double x(deque<Operator>::const_iterator& iter)const;
+        double x(list<Operator>::const_iterator& iter)const;
 };
 
 //! \sa
