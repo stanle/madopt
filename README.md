@@ -38,8 +38,7 @@ will be build and installed as well.
 To build madopt using a custom path to the ipopt/bonmin libraries and headers
 use
 ```
-cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs
--DCUSTOM_INCLUDES=/path/to/bonmin/includes
+cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
 ```
 An example for the usage can be found in ''examples/get_started.cpp''
 If Ipopt is complied without HSL, to compile and run the example run
