@@ -71,3 +71,8 @@ An example for the usage can be found in ''examples/get_started.py''. To run it 
 ```
 python examples/get_started.py
 ```
+
+License
+=======
+
+Apache License Version 2.0
