@@ -163,6 +163,10 @@ Expr tan(const Expr& a){
     return Expr(a, OP_TAN);
 }
 
+Expr sqrt(const Expr& a){
+    return pow(a, 0.5);
+}
+
 std::ostream &operator<<(std::ostream &os, const Expr &a){
 	return os << a.toString();
 }

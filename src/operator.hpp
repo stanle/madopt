@@ -38,6 +38,7 @@
 namespace MadOpt {
 
 typedef char OPType;
+
 class Operator{
     public:
 
@@ -66,9 +67,17 @@ class Operator{
                 throw MadOptError("wrong use of Expression type for int");
         }
 
-        Operator(OPType t):type(t){checkNone();}
+        Operator(OPType t):type(t){
+            checkNone();
+        }
 
-        const OPType& getType()const { return type; }
+        const uintptr_t& getData() const {
+            return value;
+        }
+
+        const OPType& getType()const {
+            return type; 
+        }
 
         const Idx getIndex()const { 
             checkVarIdx();

@@ -19,14 +19,36 @@
 #include "common.hpp"
 #include "adstack.hpp"
 #include "adstackelem.hpp"
+#include "logger.hpp"
+#include "exceptions.hpp"
 
 namespace MadOpt {
 
 EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub): 
     _lb(_lb), 
-    _ub(_ub), 
-    ops(expr.getOps().rbegin(), expr.getOps().rend())
-{}
+    _ub(_ub)
+{
+    auto& ops = expr.getOps();
+    for (auto iter=ops.rbegin(); iter!=ops.rend(); iter++){
+        auto op = *iter;
+        auto type = op.getType();
+        operators.push_back(type);
+        if (type == OP_VAR_POINTER
+                || type == OP_SQR_VAR
+                || type == OP_ADD
+                || type == OP_MUL
+                || type == OP_POW
+                || type == OP_CONST
+                || type == OP_PARAM_POINTER){
+            data.push_back(op.getData());
+        } else {
+            ASSERT(type == OP_COS 
+                    || type == OP_SIN 
+                    || type == OP_TAN, 
+                    "unknown type", type);
+        }
+    }
+}
 
 EConstraint::EConstraint(const Expr& expr): 
     EConstraint(expr, 0, 0){}
@@ -90,13 +112,22 @@ vector<Idx> EConstraint::getJacEntries(){
 
 void EConstraint::getNZ_Jac(int* jCol){
     set<Idx> varset;
-    for (auto op: ops)
-        if (op.getType() == OP_VAR_POINTER)
-            varset.insert(op.getIVar()->getPos());
+    Idx data_i = 0;
+    for (auto op: operators){
+        if (op == OP_VAR_POINTER){
+            varset.insert(getNextPos(data_i));
+        } else if (op == OP_POW 
+                || op == OP_ADD 
+                || op == OP_MUL
+                || op == OP_PARAM_POINTER
+                || op == OP_CONST
+                || op == OP_SQR_VAR)
+            data_i++;
+    }
 
-    int i=0;
+    data_i = 0;
     for (auto idx : varset) 
-        jCol[i++] = idx;
+        jCol[data_i++] = idx;
 }
 
 void EConstraint::setEvals(const double* x){
@@ -130,8 +161,8 @@ void EConstraint::setEvals(const double* x){
 
 string EConstraint::opsToString()const{
     string res;
-    for (auto op: ops)
-        res += op.toString() + "\n";
+    for (auto op: operators)
+        res += to_string(op) + "\n";
     return res;
 }
 
@@ -144,45 +175,43 @@ inline double EConstraint::getX(const double* x, Idx index)const{
 }
 
 void EConstraint::computeFinalStack(const double* x){
-    for (auto& op: ops){
-        switch(op.getType()){
-            case OP_VAR_POINTER:
-                stack->emplace_back(getX(x, op.getIVar()->getPos()),
-                        op.getIVar()->getPos());
+    Idx data_i = 0;
+    for (auto& op: operators){
+        switch(op){
+            case OP_VAR_POINTER:{
+                auto pos = getNextPos(data_i);
+                stack->emplace_back(getX(x, pos), pos);
                 break;
+            }
 
-            case OP_VAR_IDX:
-                stack->emplace_back(getX(x, op.getIndex()),
-                        op.getIndex());
+            case OP_SQR_VAR:{
+                auto pos = getNextPos(data_i);
+                stack->emplace_backSQR(getX(x, pos), pos);
                 break;
-
-            case OP_SQR_VAR:
-                stack->emplace_backSQR(getX(x, op.getIVar()->getPos()),
-                        op.getIVar()->getPos());
-                break;
+            }
 
             case OP_CONST:
-                stack->emplace_back(op.getValue());
+                stack->emplace_back(getNextValue(data_i));
                 break;
 
             case OP_PARAM_POINTER:
-                stack->emplace_back(op.getIParam()->value());
+                stack->emplace_back(getNextParamValue(data_i));
                 break;
 
             case OP_ADD_CONST:
-                stack->back().g += op.getValue();
+                stack->back().g += getNextValue(data_i);
                 break;
 
             case OP_MUL_CONST:
-                stack->back().mulAll(op.getValue());
+                stack->back().mulAll(getNextValue(data_i));
                 break;
 
             case OP_ADD:
-                caseADD(op);
+                caseADD(getNextCounter(data_i));
                 break;
 
             case OP_MUL:
-                caseMUL(op);
+                caseMUL(getNextCounter(data_i));
                 break;
 
             case OP_COS:
@@ -198,15 +227,17 @@ void EConstraint::computeFinalStack(const double* x){
                 break;
 
             case OP_POW:
-                casePOW(op);
+                casePOW(getNextValue(data_i));
                 break;
+
+            default:
+                throw MadOptError("type not known");
         }
     }
 }
 
-inline void EConstraint::caseADD(const Operator& op){
+inline void EConstraint::caseADD(const Idx& counter){
     TRACE_START;
-    Idx counter = op.getCounter();
     TRACE("counter=", counter);
     Idx stepsize = 1;
     auto frst_pos = stack->backIterator(counter-1);
@@ -247,9 +278,9 @@ inline void EConstraint::caseADD(const Operator& op){
     TRACE_END;
 }
 
-inline void EConstraint::caseMUL(const Operator& op){
-    ADStackElem& res = stack->back(op.getCounter()-1);
-    for (Idx i=0; i<op.getCounter()-1; i++){
+inline void EConstraint::caseMUL(const Idx& counter){
+    ADStackElem& res = stack->back(counter-1);
+    for (Idx i=0; i<counter-1; i++){
         ADStackElem& top = stack->back();
         res.hess.mergeInto(top.hess, top.g, res.g);
         res.hess.mergeInto(res.jac, top.jac);
@@ -281,13 +312,13 @@ inline void EConstraint::caseTAN(){
     doHessJacs(top, _sec, -top.g);
 }
 
-inline void EConstraint::casePOW(const Operator& op){
+inline void EConstraint::casePOW(const double& value){
     ADStackElem& top = stack->back();
     double pow_hess(1);
-    if (op.getValue() != 2)
-        pow_hess = std::pow(top.g, op.getValue()-2);
-    double hess = pow_hess * op.getValue() * (op.getValue()-1);
-    double jac = pow_hess * top.g * op.getValue();
+    if (value != 2)
+        pow_hess = std::pow(top.g, value-2);
+    double hess = pow_hess * value * (value-1);
+    double jac = pow_hess * top.g * value;
     top.g = pow_hess * top.g * top.g;
     doHessJacs(top, jac, hess);
 }
@@ -299,6 +330,22 @@ inline void EConstraint::doHessJacs(ADStackElem& top, double frst, double scd){
 
 inline Idx EConstraint::readJacEntry(Idx index){
      return reinterpret_cast<const Idx&>(jac[index]);
+}
+
+inline double EConstraint::getNextValue(Idx& idx){
+    return reinterpret_cast<const double&>(data[idx++]);
+}
+
+inline Idx EConstraint::getNextCounter(Idx& idx){
+    return data[idx++];
+}
+
+inline Idx EConstraint::getNextPos(Idx& idx){
+    return (reinterpret_cast<InnerVar*>(data[idx++]))->getPos();
+}
+
+inline double EConstraint::getNextParamValue(Idx& idx){
+    return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
 }
 
 }

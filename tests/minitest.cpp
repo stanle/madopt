@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014 National ICT Australia Limited (NICTA)
  * 
@@ -21,6 +22,11 @@
 #include <vector>
 
 using namespace MadOpt;
+
+void playground(double a, int b){
+    double x = std::pow(-1, 0.5);
+    std::cout<<x<<std::endl;
+}
 
 void test(double d, int i){
     IpoptModel m;
@@ -71,27 +77,27 @@ void tutorial(double p, int i){
 }
 
 int main(int argc, char* argv[]){
-    double x = 5;
-    int y = 1;
+    double d = 5;
+    int n = 1;
     size_t func = 0;
     int c;
-    while((c = getopt(argc, argv, "n:a:t:")) != -1)
+    while((c = getopt(argc, argv, "n:d:f:")) != -1)
         switch (c){
-            case 't': 
+            case 'f': 
                 func = atoi(optarg);
-            case 'a':
-                y = atoi(optarg);
+            case 'd':
+                d = atoi(optarg);
                 break;
             case 'n':
-                x = atof(optarg);
+                n = atof(optarg);
                 break;
         }
 
     vector<function<void(double, int)> > funcs 
-        = {tutorial, test};
+        = {tutorial, test, playground};
 
     if (func < funcs.size())
-        funcs[func](x, y);
+        funcs[func](d, n);
     else
         std::cout<<"invalid input"<<std::endl;
 

@@ -87,6 +87,7 @@ class Expr{
         friend Expr sin(const Expr& a);
         friend Expr cos(const Expr& a);
         friend Expr tan(const Expr& a);
+        friend Expr sqrt(const Expr& a);
 
         string opsToString()const; 
 

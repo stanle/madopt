@@ -8,10 +8,13 @@ What it is
 Madopt is a c++/python modelling interface for the MINLP solver [Bonmin](https://projects.coin-or.org/Bonmin) and the NLP solver [Ipopt](https://projects.coin-or.org/Ipopt).
 
 Madopt implements (c++):
-- expression building using operator overloading. Currently supported operators are +, +=, *, *=, /, -, pow, sin ,cos.
+- expression building using operator overloading. 
 - automatic differentiation for expressions.
 - an interface to the solvers Ipopt and Bonmin.
 - a python wrapper using [cython](http://cython.org/).
+
+Supported Operators are 
++, +=, *, *=, /, -, pow, sin ,cos, tan, sqrt.
 
 Dependencies
 ============

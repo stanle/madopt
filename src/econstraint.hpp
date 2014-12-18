@@ -64,7 +64,8 @@ class EConstraint: public InnerConstraint{
         double _lb;
         double _ub;
 
-        vector<Operator> ops;
+        vector<uintptr_t> data;
+        vector<OPType> operators;
 
         ADStack* stack = nullptr;
 
@@ -72,9 +73,9 @@ class EConstraint: public InnerConstraint{
 
         void computeFinalStack(const double* x=nullptr);
 
-        inline void caseADD(const Operator& op);
+        inline void caseADD(const Idx& counter);
 
-        inline void caseMUL(const Operator& op);
+        inline void caseMUL(const Idx& counter);
 
         inline void caseSIN();
 
@@ -82,11 +83,19 @@ class EConstraint: public InnerConstraint{
 
         inline void caseTAN();
 
-        inline void casePOW(const Operator& op);
+        inline void casePOW(const double& value);
 
         inline void doHessJacs(ADStackElem& top, double frst, double scd);
 
         inline Idx readJacEntry(Idx index);
+
+        inline double getNextValue(Idx& idx); 
+
+        inline Idx getNextCounter(Idx& idx);
+
+        inline Idx getNextPos(Idx& idx);
+
+        inline double getNextParamValue(Idx& idx);
 };
 
 }
