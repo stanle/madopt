@@ -96,6 +96,8 @@ struct tracer {
 
 #ifdef ENABLE_ASSERTS
 
+#define ASSERT_ENABLED true
+
 #define ASSERT(condition,...) do { \
         if (condition) {} else {\
             PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
@@ -126,6 +128,7 @@ struct tracer {
     } while(0)
 
 #else
+#define ASSERT_ENABLED false
 #define ASSERT(...)
 #define ASSERT_EQ(...)
 #define ASSERT_UEQ(...)

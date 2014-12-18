@@ -105,9 +105,9 @@ bool ADStack::empty()const{
     return (top == elems.begin());
 }
 
-void ADStack::fixSize(){
-    jac_mempool.fixSize();
-    hess_mempool.fixSize();
+void ADStack::optimizeAlignment(){
+    jac_mempool.optimizeAlignment();
+    hess_mempool.optimizeAlignment();
 }
 
 }

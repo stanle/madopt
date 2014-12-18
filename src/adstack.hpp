@@ -53,7 +53,7 @@ class ADStack{
 
         bool empty()const;
 
-        void fixSize();
+        void optimizeAlignment();
 
     private:
         JacMemPool jac_mempool;

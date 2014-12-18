@@ -62,7 +62,7 @@ void Model::init(){
 
     stack.clear();
 
-    //stack.fixSize();
+    stack.optimizeAlignment();
 
     obj_jac_map = obj->getJacEntries();
 

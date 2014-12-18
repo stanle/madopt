@@ -26,21 +26,15 @@ namespace MadOpt {
 template<class T>
 class MemPool{
     public:
-        MemPool(Idx initsize=0): node_counter(initsize), balance_counter(0){
-            pNode<T> tmp;
-            for (Idx i=0; i<initsize; i++){
-                tmp = new Node<T>();
-                tmp->setNext(begin);
-                begin = tmp;
-            }
+        MemPool(Idx initsize=0): 
+            node_counter(initsize), 
+            balance_counter(0)
+        {
+            optimizeAlignment();
         } 
 
         ~MemPool(){
-            if (not fixed)
-                clear();
-            else {
-                ASSERT_EQ(node_counter, items.size());
-            }
+            clear();
         }
 
         void setUnused(pNode<T> node){ 
@@ -75,14 +69,26 @@ class MemPool{
             return (balance_counter == 0); 
         }
 
-        void fixSize(){
-            clear();
-            items.resize(node_counter);
-            for (size_t i=0; i<node_counter; i++){
-                items[i].setNext(begin);
-                begin = &items[i];
+        void optimizeAlignment(){
+            ASSERT_EQ(balance_counter, 0);
+            if (node_counter > items.size()){
+                auto _size = node_counter;
+                clear();
+                node_counter = _size;
+                items.resize(node_counter);
+
+                pNode<T> frst = itemsFirst();
+                pNode<T> lst = itemsLast();
+
+                for (auto& node: items){
+                    node.setNext(begin);
+                    begin = &node;
+                    if (ASSERT_ENABLED){
+                        ASSERT(begin >= frst, begin, frst);
+                        ASSERT(begin <= lst, begin, lst);
+                    }
+                }
             }
-            fixed = true;
         }
 
     private:
@@ -90,19 +96,40 @@ class MemPool{
         size_t node_counter;
         size_t balance_counter;
         vector<Node<T> > items;
-        bool fixed = false;
 
         void clear(){
             ASSERT_EQ(balance_counter, 0);
-            ASSERT_EQ(fixed, false);
-            while (begin != nullptr){
-                pNode<T> tmp = begin;
-                begin = begin->next();
-                delete tmp;
+            if (items.empty()){
+                while (begin != nullptr){
+                    pNode<T> tmp = begin;
+                    begin = begin->next();
+                    delete tmp;
+                }
+            } else {
+                pNode<T> frst = itemsFirst();
+                pNode<T> lst = itemsLast();
+                while (begin != nullptr){
+                    if (begin >= frst && begin <= lst){
+                        begin = begin->next();
+                    } else{
+                        pNode<T> tmp = begin;
+                        begin = begin->next();
+                        delete tmp;
+                    }
+                }
+                items.clear();
             }
+            node_counter = 0;
+        }
+
+        inline pNode<T> itemsFirst() {
+            return &(items.data()[0]);
+        }
+
+        inline pNode<T> itemsLast() {
+            return &(items.data()[items.size()-1]);
         }
 };
-
 
 }
 
