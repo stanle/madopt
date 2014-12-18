@@ -17,28 +17,13 @@
 #include "inner_constraint.hpp"
 #include "logger.hpp"
 #include "solution.hpp"
-#include "adstack.hpp"
 
 namespace MadOpt {
 
 InnerConstraint::~InnerConstraint(){}
 
-double InnerConstraint::eval(const double* x){
-    VALGRIND_CONDITIONAL_JUMP_TEST(g);
-    return g;
-}
-
-void InnerConstraint::eval_jac(const double* x, double* values){
-    TRACE_START;
-    VALGRIND_CONDITIONAL_JUMP_TEST_LOOP(jac.size(), jac);
-    for (Idx i=0; i<jac.size(); i++){
-        VALGRIND_CONDITIONAL_JUMP_TEST(jac[i]);
-        values[i] = jac[i];
-    }
-    TRACE_END;
-}
-
-void InnerConstraint::eval_h(const double* x, double* values, const double& lambda){
+void InnerConstraint::eval_h(double* values, const double& lambda){
+    ASSERT_EQ(hess.size(), hess_map.size());
     for (Idx i=0; i<hess.size(); i++){
         VALGRIND_CONDITIONAL_JUMP_TEST(hess[i]);
         VALGRIND_CONDITIONAL_JUMP_TEST(hess_map[i]);
@@ -66,8 +51,6 @@ void InnerConstraint::getNZ_Jac(unsigned int* jCol){
         jCol[nz++] = idx;
     }
 }
-
-void InnerConstraint::setStack(ADStack* stack){}
 
 vector<PII> InnerConstraint::getHessEntries(){
     assert(false); 

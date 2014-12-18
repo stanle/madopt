@@ -38,11 +38,11 @@ class EConstraint: public InnerConstraint{
 
         double lb();
 
-        void lb(double v);
+        void lb(double v, Idx idx=0);
 
         double ub();
 
-        void ub(double v);
+        void ub(double v, Idx idx=0);
 
         Idx getNNZ_Jac();
 
@@ -59,11 +59,14 @@ class EConstraint: public InnerConstraint{
         const string toString() const ;
 
     private:
-        double _lb;
-        double _ub;
-
-        vector<uintptr_t> data;
         vector<OPType> operators;
+        vector<uintptr_t> data;
+
+        vector<double> lbs;
+        vector<double> ubs;
+
+        //double _lb;
+        //double _ub;
 
         ADStack& stack;
 

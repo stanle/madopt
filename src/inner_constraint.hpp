@@ -21,49 +21,52 @@
 namespace MadOpt {
 
 class Solution;
-class ADStack;
 
 class InnerConstraint{
     public:
         virtual ~InnerConstraint();
 
-        virtual double eval(const double* x);
+        // eval stuff
+        virtual void setEvals(const double* x)=0;
 
-        virtual void eval_jac(const double* x, double* values);
+        virtual void eval_h(double* values, const double& lambda);
 
-        virtual void eval_h(const double* x, double* values, const double& lambda);
-
+        // bounds 
         virtual double lb()=0;
+
         virtual void lb(double v);
 
         virtual double ub()=0;
+
         virtual void ub(double v);
 
+        // jacobian
         virtual Idx getNNZ_Jac();
 
         virtual vector<Idx> getJacEntries()=0;
 
         virtual void getNZ_Jac(unsigned int* jCol);
 
-        virtual void setStack(ADStack* stack);
-
+        // hessian
         virtual vector<PII> getHessEntries();
 
         virtual void init(HessPosMap& hess_pos_map);
 
-        virtual void setEvals(const double* x)=0;
+        // solution related
+        void setPos(Idx epos);
 
-        void setPos(Idx epos) ;
-        Idx getPos()const ;
+        Idx getPos()const;
 
         void setSolutionClass(Solution* sol);
 
-        double lam()const ;;
+        double lam()const;
 
+        // for the model evals 
         const double& getG()const ;
 
         const vector<double>& getJac()const ;
 
+        // for testing
         const vector<double>& getHess()const ;
 
         const vector<Idx>& getHessMap()const;

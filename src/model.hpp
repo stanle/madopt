@@ -202,7 +202,6 @@ class Model {
         vector<InnerConstraint*> constraints;
         ADStack stack;
         InnerConstraint* obj=nullptr;
-        double* obj_tmp=nullptr;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;
         Solution solution;
