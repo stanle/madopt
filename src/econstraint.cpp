@@ -24,9 +24,10 @@
 
 namespace MadOpt {
 
-EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub): 
+EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub, ADStack& stack): 
     _lb(_lb), 
-    _ub(_ub)
+    _ub(_ub),
+    stack(stack)
 {
     auto& ops = expr.getOps();
     for (auto iter=ops.rbegin(); iter!=ops.rend(); iter++){
@@ -50,8 +51,8 @@ EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub):
     }
 }
 
-EConstraint::EConstraint(const Expr& expr): 
-    EConstraint(expr, 0, 0){}
+EConstraint::EConstraint(const Expr& expr, ADStack& stack): 
+    EConstraint(expr, 0, 0, stack){}
 
 double EConstraint::lb(){
     return _lb; 
@@ -69,23 +70,18 @@ void EConstraint::ub(double v){
     _ub=v;
 }
 
-void EConstraint::setStack(ADStack* stack){
-    this->stack = stack; 
-}
-
 Idx EConstraint::getNNZ_Jac(){
     return jac.size(); 
 }
 
 void EConstraint::init(HessPosMap& hess_pos_map){
-    assert(stack != nullptr);
-    stack->clear();
-    assert(stack->size() == 0);
+    stack.clear();
+    ASSERT(stack.size() == 0);
     computeFinalStack();
-    assert(stack->size() == 1);
+    ASSERT(stack.size() == 1);
 
     hess_map.clear();
-    auto& hesslist = stack->back().hess;
+    auto& hesslist = stack.back().hess;
     for (auto node=hesslist.begin(); node!=hesslist.end(); node=node->next()){
         auto p = node->idx;
         auto it = hess_pos_map.find(p);
@@ -96,7 +92,7 @@ void EConstraint::init(HessPosMap& hess_pos_map){
     hess.resize(hess_map.size());
 
     jac.clear();
-    auto& jaclist = stack->back().jac;
+    auto& jaclist = stack.back().jac;
     //jac.resize(jaclist.size());
     for (auto node=jaclist.begin(); node!=jaclist.end(); node=node->next())
         jac.push_back(reinterpret_cast<const double&>(node->idx));
@@ -132,26 +128,25 @@ void EConstraint::getNZ_Jac(int* jCol){
 
 void EConstraint::setEvals(const double* x){
     TRACE_START;
-    assert(x != nullptr);
-    assert(stack != nullptr);
-    stack->clear();
+    ASSERT(x != nullptr);
+    stack.clear();
 
-    assert(stack->size() == 0);
+    ASSERT(stack.size() == 0);
     computeFinalStack(x);
-    assert(stack->size() == 1);
+    ASSERT(stack.size() == 1);
     
-    g = stack->back().g;
+    g = stack.back().g;
     VALGRIND_CONDITIONAL_JUMP_TEST(g);
 
     int i = 0;
-    JacList& jaclist= stack->back().jac;
+    JacList& jaclist= stack.back().jac;
     for (auto node=jaclist.begin(); node!=jaclist.end(); node=node->next()){
         VALGRIND_CONDITIONAL_JUMP_TEST(node->value);
         jac[i++] = node->value;
     }
 
     i = 0;
-    HessList& hesslist = stack->back().hess;
+    HessList& hesslist = stack.back().hess;
     for (auto node=hesslist.begin(); node!=hesslist.end(); node=node->next()){
         VALGRIND_CONDITIONAL_JUMP_TEST(node->value);
         hess[i++] = node->value;
@@ -180,30 +175,30 @@ void EConstraint::computeFinalStack(const double* x){
         switch(op){
             case OP_VAR_POINTER:{
                 auto pos = getNextPos(data_i);
-                stack->emplace_back(getX(x, pos), pos);
+                stack.emplace_back(getX(x, pos), pos);
                 break;
             }
 
             case OP_SQR_VAR:{
                 auto pos = getNextPos(data_i);
-                stack->emplace_backSQR(getX(x, pos), pos);
+                stack.emplace_backSQR(getX(x, pos), pos);
                 break;
             }
 
             case OP_CONST:
-                stack->emplace_back(getNextValue(data_i));
+                stack.emplace_back(getNextValue(data_i));
                 break;
 
             case OP_PARAM_POINTER:
-                stack->emplace_back(getNextParamValue(data_i));
+                stack.emplace_back(getNextParamValue(data_i));
                 break;
 
             case OP_ADD_CONST:
-                stack->back().g += getNextValue(data_i);
+                stack.back().g += getNextValue(data_i);
                 break;
 
             case OP_MUL_CONST:
-                stack->back().mulAll(getNextValue(data_i));
+                stack.back().mulAll(getNextValue(data_i));
                 break;
 
             case OP_ADD:
@@ -240,13 +235,13 @@ inline void EConstraint::caseADD(const Idx& counter){
     TRACE_START;
     TRACE("counter=", counter);
     Idx stepsize = 1;
-    auto frst_pos = stack->backIterator(counter-1);
+    auto frst_pos = stack.backIterator(counter-1);
     auto iter = frst_pos;
 
     while (2*stepsize <= counter){
         iter = frst_pos;
         ldiv_t divres = ldiv(counter, 2*stepsize);
-        TRACE("Stack=\n", stack->toString());
+        TRACE("Stack=\n", stack.toString());
         TRACE("stepsize=", stepsize, 
                 "div quot=", divres.quot, 
                 "div rest=", divres.rem);
@@ -257,10 +252,10 @@ inline void EConstraint::caseADD(const Idx& counter){
             m1->jac.mergeInto(iter->jac);
             m1->g += iter->g;
             iter += stepsize;
-            TRACE("after i=", i, "Stack=\n", stack->toString());
+            TRACE("after i=", i, "Stack=\n", stack.toString());
         }
 
-        TRACE("after loop Stack=\n", stack->toString());
+        TRACE("after loop Stack=\n", stack.toString());
         if (divres.rem >= stepsize){
             auto m1 = iter - 2*stepsize;
             TRACE("merge=", iter->toString());
@@ -269,51 +264,51 @@ inline void EConstraint::caseADD(const Idx& counter){
             m1->jac.mergeInto(iter->jac);
             m1->g += iter->g;
         }
-        TRACE("after rest Stack=\n", stack->toString());
+        TRACE("after rest Stack=\n", stack.toString());
 
         stepsize *= 2;
     }
-    stack->pop_back(counter-1);
-    TRACE("End Stack=\n", stack->toString());
+    stack.pop_back(counter-1);
+    TRACE("End Stack=\n", stack.toString());
     TRACE_END;
 }
 
 inline void EConstraint::caseMUL(const Idx& counter){
-    ADStackElem& res = stack->back(counter-1);
+    ADStackElem& res = stack.back(counter-1);
     for (Idx i=0; i<counter-1; i++){
-        ADStackElem& top = stack->back();
+        ADStackElem& top = stack.back();
         res.hess.mergeInto(top.hess, top.g, res.g);
         res.hess.mergeInto(res.jac, top.jac);
         res.hess.mergeInto(top.jac, res.jac);
         res.jac.mergeInto(top.jac, top.g, res.g);
         res.g *= top.g;
-        stack->pop_back();
+        stack.pop_back();
     }
 }
 
 inline void EConstraint::caseSIN(){
-    ADStackElem& top = stack->back();
+    ADStackElem& top = stack.back();
     double _cos = ::cos(top.g);
     top.g = ::sin(top.g);
     doHessJacs(top, _cos, -top.g);
 }
 
 inline void EConstraint::caseCOS(){
-    ADStackElem& top = stack->back();
+    ADStackElem& top = stack.back();
     double _sin = ::sin(top.g);
     top.g = ::cos(top.g);
     doHessJacs(top, -_sin, -top.g);
 }
 
 inline void EConstraint::caseTAN(){
-    ADStackElem& top = stack->back();
+    ADStackElem& top = stack.back();
     top.g = ::tan(top.g);
     double _sec = 1 + ::pow(top.g, 2);
     doHessJacs(top, _sec, -top.g);
 }
 
 inline void EConstraint::casePOW(const double& value){
-    ADStackElem& top = stack->back();
+    ADStackElem& top = stack.back();
     double pow_hess(1);
     if (value != 2)
         pow_hess = std::pow(top.g, value-2);

@@ -43,10 +43,6 @@ Model::~Model(){
     if (obj != nullptr){
         delete obj;
     }
-
-    if (stack != nullptr){
-        delete stack;
-    }
 }
 
 void Model::init(){
@@ -54,24 +50,19 @@ void Model::init(){
     if (show_solver)
         cout<<"Starting Init"<<endl;
 
-    if (stack != nullptr)
-        delete stack;
-    stack = new ADStack();
-        
     hess_pos_map.clear();
 
     if (obj == nullptr)
         throw MadOptError("no objective set");
 
-    obj->setStack(stack);
     obj->init(hess_pos_map);
     for (auto constr: constraints){
-        constr->setStack(stack);
         constr->init(hess_pos_map);
     }
 
-    stack->clear();
-    stack->fixSize();
+    stack.clear();
+
+    //stack.fixSize();
 
     obj_jac_map = obj->getJacEntries();
 
@@ -144,7 +135,7 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
         if (&solution != &sol)
             throw MadOptError("added variable from other model to wrong model");
     }
-    return addConstr(new EConstraint(expr, lb, ub));
+    return addConstr(new EConstraint(expr, lb, ub, stack));
 }
 
 Constraint Model::addEqConstr(const Expr& expr, const double equal){
@@ -170,7 +161,7 @@ void Model::setObj(InnerConstraint* constraint){
 }
 
 void Model::setObj(const Expr& expr){
-    setObj(new EConstraint(expr));
+    setObj(new EConstraint(expr, stack));
 }
 
 //NLP init stuff

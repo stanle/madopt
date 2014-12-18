@@ -24,7 +24,7 @@ namespace MadOpt {
  
 //#define ENABLE_LOGGING
 //#define ENABLE_VALGRIND_DEBUGGING
-//#define ENABLE_ASSERTS
+#define ENABLE_ASSERTS
 
 template<typename TF>
 void write_debug_output( std::ostream & out, TF const& f ) {

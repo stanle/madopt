@@ -32,9 +32,9 @@ class ADStackElem;
 class EConstraint: public InnerConstraint{
     public:
 
-        EConstraint(const Expr& expr, const double _lb, const double _ub);
+        EConstraint(const Expr& expr, const double _lb, const double _ub, ADStack& stack);
 
-        EConstraint(const Expr& expr);
+        EConstraint(const Expr& expr, ADStack& stack);
 
         double lb();
 
@@ -43,8 +43,6 @@ class EConstraint: public InnerConstraint{
         double ub();
 
         void ub(double v);
-
-        void setStack(ADStack* stack);
 
         Idx getNNZ_Jac();
 
@@ -67,7 +65,7 @@ class EConstraint: public InnerConstraint{
         vector<uintptr_t> data;
         vector<OPType> operators;
 
-        ADStack* stack = nullptr;
+        ADStack& stack;
 
         inline double getX(const double* x, Idx index)const;
 

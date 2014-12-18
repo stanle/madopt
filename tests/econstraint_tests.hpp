@@ -33,11 +33,9 @@ class EConstraintTest: public CxxTest::TestSuite {
                 const vector<double> hess={}, 
                 const double delta=0.000001
                 ){
-            EConstraint e(exp);
-
+            ADStack stack;
+            EConstraint e(exp, stack);
             HessPosMap hess_pos_map;
-            ADStack* stack(new ADStack());
-            e.setStack(stack);
             e.init(hess_pos_map);
 
             map<int, double> jacvm;
@@ -84,8 +82,6 @@ class EConstraintTest: public CxxTest::TestSuite {
                 for (auto p: eh)
                     TS_ASSERT_DELTA(p.second, hessvm.at(p.first), delta);
             }
-
-            delete stack;
         }
 
         void testVar(){
