@@ -50,7 +50,7 @@ class EConstraint: public InnerConstraint{
 
         vector<Idx> getJacEntries();
 
-        void getNZ_Jac(int* jCol);
+        void getNZ_Jac(unsigned int* jCol);
 
         void setEvals(const double* x);
 
@@ -66,6 +66,8 @@ class EConstraint: public InnerConstraint{
         vector<OPType> operators;
 
         ADStack& stack;
+
+        set<Idx> getVarsSet();
 
         inline double getX(const double* x, Idx index)const;
 
@@ -84,8 +86,6 @@ class EConstraint: public InnerConstraint{
         inline void casePOW(const double& value);
 
         inline void doHessJacs(ADStackElem& top, double frst, double scd);
-
-        inline Idx readJacEntry(Idx index);
 
         inline double getNextValue(Idx& idx); 
 

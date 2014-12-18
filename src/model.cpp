@@ -191,7 +191,8 @@ void Model::getNZ_Jac(int* iRow, int* jCol){
         }
         pos++;
 
-        constr->getNZ_Jac( &jCol[nz] );
+        unsigned int* p = (unsigned int*)(&(jCol[nz]));
+        constr->getNZ_Jac(p);
         nz += size;
     }
     TRACE_END;

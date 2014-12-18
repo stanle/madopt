@@ -58,7 +58,7 @@ Idx InnerConstraint::getNNZ_Jac(){
     return getJacEntries().size(); 
 }
 
-void InnerConstraint::getNZ_Jac(int* jCol){
+void InnerConstraint::getNZ_Jac(unsigned int* jCol){
     auto jac_entries = getJacEntries();
     Idx nz = 0;
     for (auto idx: jac_entries){

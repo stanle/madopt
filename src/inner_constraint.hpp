@@ -43,7 +43,7 @@ class InnerConstraint{
 
         virtual vector<Idx> getJacEntries()=0;
 
-        virtual void getNZ_Jac(int* jCol);
+        virtual void getNZ_Jac(unsigned int* jCol);
 
         virtual void setStack(ADStack* stack);
 

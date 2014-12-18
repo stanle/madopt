@@ -71,6 +71,7 @@ void EConstraint::ub(double v){
 }
 
 Idx EConstraint::getNNZ_Jac(){
+    ASSERT(operators[0] == OP_CONST || !jac.empty());
     return jac.size(); 
 }
 
@@ -93,35 +94,19 @@ void EConstraint::init(HessPosMap& hess_pos_map){
 
     jac.clear();
     auto& jaclist = stack.back().jac;
-    //jac.resize(jaclist.size());
-    for (auto node=jaclist.begin(); node!=jaclist.end(); node=node->next())
-        jac.push_back(reinterpret_cast<const double&>(node->idx));
+    jac.resize(jaclist.size());
 }
 
 vector<Idx> EConstraint::getJacEntries(){ 
-    vector<Idx> jac_entries(jac.size());
-    for (Idx i=0; i<jac.size(); i++){
-        jac_entries[i] = readJacEntry(i);
-    }
+    vector<Idx> jac_entries(getNNZ_Jac());
+    getNZ_Jac(jac_entries.data());
     return jac_entries;
 }
 
-void EConstraint::getNZ_Jac(int* jCol){
-    set<Idx> varset;
+void EConstraint::getNZ_Jac(unsigned int* jCol){
+    auto varset = getVarsSet();
+    ASSERT_EQ(varset.size(), getNNZ_Jac());
     Idx data_i = 0;
-    for (auto op: operators){
-        if (op == OP_VAR_POINTER){
-            varset.insert(getNextPos(data_i));
-        } else if (op == OP_POW 
-                || op == OP_ADD 
-                || op == OP_MUL
-                || op == OP_PARAM_POINTER
-                || op == OP_CONST
-                || op == OP_SQR_VAR)
-            data_i++;
-    }
-
-    data_i = 0;
     for (auto idx : varset) 
         jCol[data_i++] = idx;
 }
@@ -323,10 +308,6 @@ inline void EConstraint::doHessJacs(ADStackElem& top, double frst, double scd){
     top.jac.mulAll(frst);
 }
 
-inline Idx EConstraint::readJacEntry(Idx index){
-     return reinterpret_cast<const Idx&>(jac[index]);
-}
-
 inline double EConstraint::getNextValue(Idx& idx){
     return reinterpret_cast<const double&>(data[idx++]);
 }
@@ -341,6 +322,23 @@ inline Idx EConstraint::getNextPos(Idx& idx){
 
 inline double EConstraint::getNextParamValue(Idx& idx){
     return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
+}
+
+set<Idx> EConstraint::getVarsSet() {
+    set<Idx> varset;
+    Idx data_i = 0;
+    for (auto op: operators){
+        if (op == OP_VAR_POINTER
+                || op == OP_SQR_VAR){
+            varset.insert(getNextPos(data_i));
+        } else if (op == OP_POW 
+                || op == OP_ADD 
+                || op == OP_MUL
+                || op == OP_PARAM_POINTER
+                || op == OP_CONST)
+            data_i++;
+    }
+    return varset;
 }
 
 }
