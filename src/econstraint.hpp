@@ -62,11 +62,11 @@ class EConstraint: public InnerConstraint{
         vector<OPType> operators;
         vector<uintptr_t> data;
 
-        vector<double> lbs;
-        vector<double> ubs;
+        //vector<double> lbs;
+        //vector<double> ubs;
 
-        //double _lb;
-        //double _ub;
+        double _lb;
+        double _ub;
 
         ADStack& stack;
 

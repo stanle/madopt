@@ -42,6 +42,21 @@ void test(double d, int i){
     //m.solve();
 }
 
+void constructModel(const int N, IpoptModel& m, vector<Var>& x){
+    Expr obj(0);
+    for (int i=0; i<N; i++){
+        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        obj += pow(x[i] - 1, 2);
+    }
+    m.setObj(obj);
+
+    for (int i=0; i<N-2; i++){
+        double a = double(i+2)/(double)N;
+        m.addEqConstr((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i], 0);
+    }
+    m.show_solver = true;
+}
+
 void tutorial(double p, int i){
     int N = std::pow(10, p);
 
@@ -51,20 +66,9 @@ void tutorial(double p, int i){
 //    m.setStringOption("hessian_approximation", "limited-memory");
 
     vector<Var> x(N);
-    Expr obj(0);
-    for (int i=0; i<N; i++){
-        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-        obj += pow(x[i] - 1, 2);
-    }
 
-    m.setObj(obj);
+    constructModel(N, m, x);
 
-    for (int i=0; i<N-2; i++){
-        double a = double(i+2)/(double)N;
-        m.addEqConstr((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i], 0);
-    }
-
-    m.show_solver = true;
     m.solve();
 
     cout<<m.objValue()<<endl;

@@ -25,12 +25,12 @@
 namespace MadOpt {
 
 EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub, ADStack& stack): 
-    //_lb(_lb), 
-    //_ub(_ub),
+    _lb(_lb), 
+    _ub(_ub),
     stack(stack)
 {
-    lbs.push_back(_lb);
-    ubs.push_back(_ub);
+    //lbs.push_back(_lb);
+    //ubs.push_back(_ub);
 
     auto& ops = expr.getOps();
     for (auto iter=ops.rbegin(); iter!=ops.rend(); iter++){
@@ -43,6 +43,7 @@ EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub, A
                 || type == OP_MUL
                 || type == OP_POW
                 || type == OP_CONST
+                || type == OP_VAR_IDX
                 || type == OP_PARAM_POINTER){
             data.push_back(op.getData());
         } else {
@@ -58,23 +59,23 @@ EConstraint::EConstraint(const Expr& expr, ADStack& stack):
     EConstraint(expr, 0, 0, stack){}
 
 double EConstraint::lb(){
-    return lbs[0];
-    //return _lb; 
+    //return lbs[0];
+    return _lb; 
 }
 
 void EConstraint::lb(double v, Idx idx){
-    lbs[idx] = v;
-    //_lb=v;
+    //lbs[idx] = v;
+    _lb=v;
 }
 
 double EConstraint::ub(){
-    return ubs[0];
-    //return _ub; 
+    //return ubs[0];
+    return _ub; 
 }
 
 void EConstraint::ub(double v, Idx idx){
-    ubs[idx] = v;
-    //_ub=v;
+    //ubs[idx] = v;
+    _ub=v;
 }
 
 Idx EConstraint::getNNZ_Jac(){
