@@ -79,3 +79,9 @@ License
 =======
 
 Apache License Version 2.0
+
+Citing
+======
+
+If you are using madopt for your research, please consider citing the Ipopt project. The details on how to cite it can be found on the Ipopt [website](https://projects.coin-or.org/Ipopt).
+
