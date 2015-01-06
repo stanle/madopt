@@ -1,6 +1,6 @@
 Madopt
 ======
-Madopt = Modelling and Automatic Differentiation for Optimisation
+Madopt = **M**odelling and **A**utomatic **D**ifferentiation for **Opt**imisation
 
 What it is
 ==========
