@@ -1,6 +1,6 @@
 Madopt
 ======
-Madopt = Modelling and Automatic Differentiation for Optimisation
+Madopt = **M**odelling and **A**utomatic **D**ifferentiation for **Opt**imisation
 
 What it is
 ==========
@@ -14,7 +14,7 @@ Madopt implements (c++):
 - a python wrapper using [cython](http://cython.org/).
 
 Supported Operators are 
-+, +=, *, *=, /, -, pow, sin ,cos, tan, sqrt.
++, +=, *, *=, /, -, pow, sin, cos, tan, sqrt.
 
 Dependencies
 ============
@@ -35,15 +35,15 @@ cmake ..
 make
 make install
 ```
-creates and installs static libraries called libmadopt.a and libmadopt_ipopt.a.
-If libbonmin is found on the system then the static library libmadopt_bonmin.a
+creates and installs static libraries called **libmadopt.a** and **libmadopt_ipopt.a**.
+If libbonmin is found on the system then the static library **libmadopt_bonmin.a**
 will be build and installed as well.
 To build madopt using a custom path to the ipopt/bonmin libraries and headers
 use
 ```
 cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
 ```
-An example for the usage can be found in ''examples/get_started.cpp''
+An example for the usage can be found in [examples/get_started.cpp](examples/get_started.cpp)
 If Ipopt is complied without HSL, to compile and run the example run
 ```
 g++ ../examples/get_started.cpp --std=c++11 -lmadopt_ipopt -lmadopt -lipopt -lcoinmetis -llapack -lcoinmumps -lpthread -ldl -lm -lz -lbz2 -lblas -o get_started
@@ -70,7 +70,7 @@ To install the module into python globally run
 ```
 python setup.py install
 ```
-An example for the usage can be found in ''examples/get_started.py''. To run it call
+An example for the usage can be found in [examples/get_started.py](examples/get_started.py). To run it call
 ```
 python examples/get_started.py
 ```
