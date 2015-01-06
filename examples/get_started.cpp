@@ -16,6 +16,7 @@
 #include <madopt/ipopt_model.hpp>
 //#include <madopt/bonmin_model.hpp>
 #include <vector>
+#include <math.h>
 using namespace std;
 
 int main(){
