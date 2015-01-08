@@ -15,8 +15,6 @@
  */
 #include <cxxtest/TestSuite.h>
 #include "testmodel.hpp"
-#include "tutorial_constraint.hpp"
-#include "tutorial_obj_term.hpp"
 using namespace MadOpt;
 
 class ExprTest: public CxxTest::TestSuite {

@@ -22,7 +22,6 @@
 #include "param.hpp"
 #include "inner_constraint.hpp"
 #include "constraint.hpp"
-#include "econstraint.hpp"
 #include "logger.hpp"
 
 using namespace MadOpt;
@@ -64,7 +63,6 @@ void Model::init(){
     obj_jac_map.clear();
     obj_jac_map.resize(obj->getNNZ_Jac());
     obj->getNZ_Jac(obj_jac_map.data());
-    //obj_jac_map = obj->getJacEntries();
 
     if (show_solver)
         cout<<"init end"<<endl;
@@ -111,14 +109,6 @@ Var Model::addBVar(double init, string name){
 //Constraint stuff
 //
 //
-Constraint Model::addConstr(InnerConstraint* con){
-    con->setPos(constraints.size());
-    con->setSolutionClass(&solution);
-    constraints.push_back(con);
-    model_changed = true;
-    return Constraint(con);
-}
-
 Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
     if (lb > ub)
         throw MadOptError("lower bound is greater then upper bound for expr=" 
@@ -129,9 +119,14 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
     for (auto& var: vars){
         const Solution& sol = var->getSolution();
         if (&solution != &sol)
-            throw MadOptError("added variable from other model to wrong model");
+            throw MadOptError("cannot add variable from other model to this model");
     }
-    return addConstr(new EConstraint(expr, lb, ub, stack));
+    auto con = new InnerConstraint(expr, lb, ub, stack);
+    con->setPos(constraints.size());
+    con->setSolutionClass(&solution);
+    constraints.push_back(con);
+    model_changed = true;
+    return Constraint(con);
 }
 
 Constraint Model::addEqConstr(const Expr& expr, const double equal){
@@ -157,7 +152,7 @@ void Model::setObj(InnerConstraint* constraint){
 }
 
 void Model::setObj(const Expr& expr){
-    setObj(new EConstraint(expr, stack));
+    setObj(new InnerConstraint(expr, stack));
 }
 
 //NLP init stuff

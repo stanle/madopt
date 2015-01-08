@@ -90,8 +90,8 @@ class Model {
          * @param[in] name name of the variable
          */
         Var addBVar(double init, string name);
+
         //Param stuff
-        
         /*! \brief add a new parameter to the model,
          * @param[in] value value
          * @param[in] name name of the variable
@@ -99,10 +99,6 @@ class Model {
         Param addParam(double value, string name);
 
         //Constraint stuff
-
-        //! add custom constraint that is derived from InnerConstraint
-        Constraint addConstr(InnerConstraint* con);
-
         /*! add new constraint that is based on Expr, lb <= expr <= ub
          * \param[in] expr the constraint expression
          * \param[in] ub the upper bound of the constraint

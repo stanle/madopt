@@ -16,43 +16,61 @@
 #ifndef MADOPT_INNER_CONSTRAINT_H
 #define MADOPT_INNER_CONSTRAINT_H
 
+#include <set>
+#include <vector>
 #include "common.hpp"
 
 namespace MadOpt {
 
 class Solution;
+class ADStack;
+class Expr;
+typedef char OPType;
+class ADStackElem;
 
 class InnerConstraint{
     public:
-        virtual ~InnerConstraint();
+        InnerConstraint(const Expr& expr, const double _lb, const double _ub, ADStack& stack);
 
-        // eval stuff
-        virtual void setEvals(const double* x)=0;
+        InnerConstraint(const Expr& expr, ADStack& stack);
 
-        virtual void eval_h(double* values, const double& lambda);
+        // bounds
+        //
+        //
+        double lb();
 
-        // bounds 
-        virtual double lb()=0;
+        void lb(double v);
 
-        virtual void lb(double v);
+        double ub();
 
-        virtual double ub()=0;
+        void ub(double v);
 
-        virtual void ub(double v);
+        // init
+        //
+        //
+        Idx getNNZ_Jac();
 
-        // jacobian
-        virtual Idx getNNZ_Jac();
+        void getNZ_Jac(unsigned int* jCol);
 
-        virtual vector<Idx> getJacEntries()=0;
+        void init(HessPosMap& hess_pos_map);
 
-        virtual void getNZ_Jac(unsigned int* jCol);
+        // compute next point
+        //
+        //
+        void setEvals(const double* x);
 
-        // hessian
-        virtual vector<PII> getHessEntries();
+        // access next points solution
+        //
+        //
+        const double& getG()const ;
 
-        virtual void init(HessPosMap& hess_pos_map);
+        const vector<double>& getJac()const ;
 
-        // solution related
+        void eval_h(double* values, const double& lambda);
+
+        // for access solution
+        //
+        //
         void setPos(Idx epos);
 
         Idx getPos()const;
@@ -61,25 +79,68 @@ class InnerConstraint{
 
         double lam()const;
 
-        // for the model evals 
-        const double& getG()const ;
+        // for debug and testing
+        //
+        //
+        string opsToString()const;
 
-        const vector<double>& getJac()const ;
+        const string toString() const ;
 
-        // for testing
         const vector<double>& getHess()const ;
 
         const vector<Idx>& getHessMap()const;
 
-        virtual const string toString()const=0;
+        vector<Idx> getJacEntries();
 
-    protected:
+    private:
         double g;
         vector<double> jac;
         vector<double> hess;
+
         vector<Idx> hess_map;
+
         Idx pos=0;
         Solution* sol;
+
+        vector<OPType> operators;
+        vector<uintptr_t> data;
+
+        double _lb;
+        double _ub;
+
+        ADStack& stack;
+
+        set<Idx> getVarsSet();
+
+        double getX(const double* x, Idx index)const;
+
+        void computeFinalStack(const double* x=nullptr);
+
+        void caseVAR(const double* x, const Idx& pos);
+
+        void caseCONST(const double& value);
+
+        void caseADD(const Idx& counter);
+
+        void caseMUL(const Idx& counter);
+
+        void caseSIN();
+
+        void caseCOS();
+
+        void caseTAN();
+
+        void casePOW(const double& value);
+
+        void doHessJacs(ADStackElem& top, double frst, double scd);
+
+        double getNextValue(Idx& idx); 
+
+        Idx getNextCounter(Idx& idx);
+
+        Idx getNextPos(Idx& idx);
+
+        double getNextParamValue(Idx& idx);
 };
 }
 #endif

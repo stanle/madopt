@@ -15,9 +15,7 @@
  */
 #include <cxxtest/TestSuite.h>
 #include "testmodel.hpp"
-#include "../src/econstraint.hpp"
-#include "tutorial_obj_term.hpp"
-#include "tutorial_constraint.hpp"
+#include "../src/inner_constraint.hpp"
 
 using namespace MadOpt;
 
@@ -34,7 +32,7 @@ class EConstraintTest: public CxxTest::TestSuite {
                 const double delta=0.000001
                 ){
             ADStack stack;
-            EConstraint e(exp, stack);
+            InnerConstraint e(exp, stack);
             HessPosMap hess_pos_map;
             e.init(hess_pos_map);
 
@@ -177,49 +175,6 @@ class EConstraintTest: public CxxTest::TestSuite {
                 {0,1,2}, {(2*ax+1.5)*cos(bx), -(pow(ax,2)+1.5*ax-v)*sin(bx), -1},
                 {PII(0,0), PII(0,1), PII(1,1)},
                 {cos(bx)*2, -sin(bx)*(2*ax+1.5), -(pow(ax,2)+1.5*ax-v)*cos(bx)});
-        }
-
-        void testTutorial(){
-            int N = 100;
-            int nah = N-1 + N-2;
-            TestModel m;
-            vector<Var> x(N);
-            vector<double> x_buffer(N);
-            for (int i=0; i<N; i++){
-                x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-                x_buffer[i] = i;
-            }
-            HessPosMap hess_pos_map;
-            for (int i=0; i<N-2; i++){
-                double a = double(i+2)/(double)N;
-                TutorialConstraint t(i, a);
-                t.init(hess_pos_map);
-                t.setEvals(x_buffer.data());
-                Tes((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i],
-                        x_buffer, t.getG(), 
-                        t.getJacEntries(), t.getJac(),
-                        t.getHessEntries(), t.getHess(), 0.00001);
-            }
-        }
-
-        void testSumObj(){
-            int N = 100;
-            TestModel m;
-            vector<Var> x(N);
-            Expr obj(0);
-            vector<double> x_data(x.size());
-            for (int i=0; i<N; i++){
-                x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-                obj += pow(x[i] - 1, 2);
-                x_data[i] = i;
-            }
-            TutorialObjTerm t(N, 0);
-            HessPosMap hess_pos_map;
-            t.init(hess_pos_map);
-            t.setEvals(x_data.data());
-
-            Tes(obj, x_data, t.getG(), t.getJacEntries(), t.getJac(), 
-                    t.getHessEntries(), vector<double>(N,2), 0);
         }
 
         void testCaseADD(){

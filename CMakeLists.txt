@@ -45,7 +45,6 @@ add_library(madopt STATIC
     ${SRC_DIR}/var.cpp
     ${SRC_DIR}/adstack.cpp
     ${SRC_DIR}/adstackelem.cpp
-    ${SRC_DIR}/econstraint.cpp
 	)
 
 install(TARGETS madopt ARCHIVE DESTINATION lib)
@@ -143,10 +142,8 @@ endif()
 #
 #
 add_executable(minitest
-    ${TEST_DIR}/tutorial_constraint.hpp
-    ${TEST_DIR}/tutorial_obj_term.hpp
     ${TEST_DIR}/minitest.cpp
-	)
+)
 
 target_link_libraries(minitest 
     ${BONMIN_LIBRARIES} 
@@ -171,8 +168,7 @@ if(CXXTEST_FOUND)
         ../${TEST_DIR}/model_tests.hpp
         ../${TEST_DIR}/ipoptmodel_tests.hpp
         ../${TEST_DIR}/bonminmodel_tests.hpp
-        ../${TEST_DIR}/tutorial_constraint.hpp
-        ../${TEST_DIR}/tutorial_obj_term.hpp)
+    )
 
     target_link_libraries(unittest_madopt 
         ${BONMIN_LIBRARIES} 

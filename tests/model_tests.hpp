@@ -20,17 +20,6 @@ using namespace MadOpt;
 class ModelTest: public CxxTest::TestSuite {
     public:
 
-        void testModel(){
-            Idx N = pow(10, 3);
-           TestModel m;
-            for (int i=0; i<N; i++)
-                m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-            m.setObj(new TutorialObjTerm(N, 0));
-           for (int i=0; i<N-2; i++)
-               m.addConstr(new TutorialConstraint(i, (double(i+2)/(double)N)));
-           m.init();
-        }
-
         void testModelExp(){
            TestModel m;
             Idx N = pow(10, 3);
