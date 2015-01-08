@@ -18,14 +18,41 @@
 
 namespace MadOpt {
 
-ADStackElem::ADStackElem(JacMemPool& pj, HessMemPool& ph): g(0), jac(pj), hess(ph){}
+ADStackElem::ADStackElem(JacMemPool& pj, HessMemPool& ph): g(0), jac(pj), hess(ph){
+    TRACE("constructor");
+}
+
+ADStackElem::ADStackElem(ADStackElem&& other) noexcept: g(other.g), jac(other.jac), hess(other.hess){
+    TRACE_START;
+    TRACE("move constructor");
+    jac.setNext(other.jac.moveBegin());
+    hess.setNext(other.hess.moveBegin());
+    TRACE_END;
+}
+
+ADStackElem::ADStackElem(const ADStackElem& other): g(other.g), jac(other.jac), hess(other.hess){
+    TRACE_START;
+    TRACE("copy constructor");
+    jac.setNext(other.jac.begin());
+    hess.setNext(other.hess.begin());
+    ASSERT(false, "not save to use");
+    abort();
+    TRACE_END;
+}
+
+ADStackElem::~ADStackElem(){
+    TRACE("deconstructor");
+}
 
 void ADStackElem::clear(){
-    jac.clear(); hess.clear(); 
+    jac.clear(); 
+    hess.clear(); 
 }
 
 void ADStackElem::mulAll(double w){
-    g*=w, jac.mulAll(w); hess.mulAll(w); 
+    g*=w; 
+    jac.mulAll(w); 
+    hess.mulAll(w); 
 }
 
 void ADStackElem::emplace(const double& r, const Idx& idx){
@@ -40,9 +67,11 @@ void ADStackElem::emplaceSQR(const double& r, const Idx& idx){
 }
 
 string ADStackElem::toString()const{ 
+    //TRACE_START;
     string res = "g=" + doubleToString(g) + "|";
     res += "Jac: " + jac.toString() + "|";
     res += "Hess: " + hess.toString();
+    //TRACE_END;
     return res;
 }
 

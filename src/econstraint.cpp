@@ -84,6 +84,7 @@ Idx EConstraint::getNNZ_Jac(){
 }
 
 void EConstraint::init(HessPosMap& hess_pos_map){
+    TRACE_START;
     stack.clear();
     ASSERT(stack.size() == 0);
     computeFinalStack();
@@ -103,6 +104,7 @@ void EConstraint::init(HessPosMap& hess_pos_map){
     jac.clear();
     auto& jaclist = stack.back().jac;
     jac.resize(jaclist.size());
+    TRACE_END;
 }
 
 vector<Idx> EConstraint::getJacEntries(){ 
@@ -163,26 +165,31 @@ inline double EConstraint::getX(const double* x, Idx index)const{
 }
 
 void EConstraint::computeFinalStack(const double* x){
+    TRACE_START;
     Idx data_i = 0;
     for (auto& op: operators){
         switch(op){
             case OP_VAR_POINTER:{
+                TRACE("Variable");
                 auto pos = getNextPos(data_i);
                 stack.emplace_back(getX(x, pos), pos);
                 break;
             }
 
             case OP_SQR_VAR:{
+                TRACE("Squared Variable");
                 auto pos = getNextPos(data_i);
                 stack.emplace_backSQR(getX(x, pos), pos);
                 break;
             }
 
             case OP_CONST:
+                TRACE("Constant");
                 stack.emplace_back(getNextValue(data_i));
                 break;
 
             case OP_PARAM_POINTER:
+                TRACE("Parameter");
                 stack.emplace_back(getNextParamValue(data_i));
                 break;
 
@@ -222,51 +229,115 @@ void EConstraint::computeFinalStack(const double* x){
                 throw MadOptError("type not known");
         }
     }
+    TRACE_END;
 }
+
+//inline void EConstraint::caseADD(const Idx& counter){
+//    TRACE_START;
+//    TRACE("counter=", counter);
+//    Idx stepsize = 1;
+//    auto frst_pos = stack.backIterator(counter-1);
+//    auto iter = frst_pos;
+//
+//    TRACE("start while loop");
+//    while (2*stepsize <= counter){
+//        iter = frst_pos;
+//        ldiv_t divres = ldiv(counter, 2*stepsize);
+//        TRACE("Stack=\n", stack.toString());
+//        TRACE("stepsize=", stepsize, 
+//                "div quot=", divres.quot, 
+//                "div rest=", divres.rem);
+//        for (int i=0; i <divres.quot ; ++i) {
+//            auto m1 = iter;
+//            iter += stepsize;
+//            m1->hess.mergeInto(iter->hess);
+//            m1->jac.mergeInto(iter->jac);
+//            m1->g += iter->g;
+//            iter += stepsize;
+//            TRACE("after i=", i, "Stack=\n", stack.toString());
+//        }
+//
+//        TRACE("after loop Stack=\n", stack.toString());
+//        if (divres.rem >= stepsize){
+//            auto m1 = iter - 2*stepsize;
+//            TRACE("merge=", iter->toString());
+//            TRACE("merge into=", m1->toString());
+//            m1->hess.mergeInto(iter->hess);
+//            m1->jac.mergeInto(iter->jac);
+//            m1->g += iter->g;
+//        }
+//        TRACE("after rest Stack=\n", stack.toString());
+//
+//        stepsize *= 2;
+//    }
+//    stack.pop_back(counter-1);
+//    TRACE("End Stack=\n", stack.toString());
+//    TRACE_END;
+//}
 
 inline void EConstraint::caseADD(const Idx& counter){
     TRACE_START;
-    TRACE("counter=", counter);
+    TRACE("counter=", counter,
+            "stack=\n", stack.toString());
     Idx stepsize = 1;
-    auto frst_pos = stack.backIterator(counter-1);
-    auto iter = frst_pos;
+    auto iter = counter - 1;
 
+    TRACE("start while loop");
     while (2*stepsize <= counter){
-        iter = frst_pos;
+        iter = counter - 1;
         ldiv_t divres = ldiv(counter, 2*stepsize);
-        TRACE("Stack=\n", stack.toString());
-        TRACE("stepsize=", stepsize, 
+
+        TRACE("before for loop::",
+                "iter=", iter,
+                "stepsize=", stepsize, 
                 "div quot=", divres.quot, 
-                "div rest=", divres.rem);
+                "div rest=", divres.rem,
+                "stack=\n", stack.toString());
+
         for (int i=0; i <divres.quot ; ++i) {
-            auto m1 = iter;
-            iter += stepsize;
-            m1->hess.mergeInto(iter->hess);
-            m1->jac.mergeInto(iter->jac);
-            m1->g += iter->g;
-            iter += stepsize;
-            TRACE("after i=", i, "Stack=\n", stack.toString());
+            auto& m1 = stack.back(iter);
+            iter -= stepsize;
+            auto& iter_elem = stack.back(iter);
+            m1.hess.mergeInto(iter_elem.hess);
+            m1.jac.mergeInto(iter_elem.jac);
+            m1.g += iter_elem.g;
+            iter -= stepsize;
+            TRACE("after i=", i, 
+                    "iter=", iter, 
+                    "Stack=\n", stack.toString());
         }
 
-        TRACE("after loop Stack=\n", stack.toString());
+        TRACE("after for loop",
+                "iter=", iter, 
+                "Stack=\n", stack.toString());
+
         if (divres.rem >= stepsize){
-            auto m1 = iter - 2*stepsize;
-            TRACE("merge=", iter->toString());
-            TRACE("merge into=", m1->toString());
-            m1->hess.mergeInto(iter->hess);
-            m1->jac.mergeInto(iter->jac);
-            m1->g += iter->g;
+            ASSERT_LE(iter, counter-1);
+            auto& m1 = stack.back(iter + 2*stepsize);
+            auto& iter_elem = stack.back(iter);
+            TRACE("merge=", iter_elem.toString());
+            TRACE("merge into=", m1.toString());
+            m1.hess.mergeInto(iter_elem.hess);
+            m1.jac.mergeInto( iter_elem.jac);
+            m1.g += iter_elem.g;
         }
-        TRACE("after rest Stack=\n", stack.toString());
 
         stepsize *= 2;
+
+        TRACE("after rest",
+                "stepsize=", stepsize, 
+                "Stack=\n", stack.toString());
     }
+
+    TRACE("end while loop",
+            "counter=", counter);
     stack.pop_back(counter-1);
     TRACE("End Stack=\n", stack.toString());
     TRACE_END;
 }
 
 inline void EConstraint::caseMUL(const Idx& counter){
+    TRACE_START;
     ADStackElem& res = stack.back(counter-1);
     for (Idx i=0; i<counter-1; i++){
         ADStackElem& top = stack.back();
@@ -277,6 +348,7 @@ inline void EConstraint::caseMUL(const Idx& counter){
         res.g *= top.g;
         stack.pop_back();
     }
+    TRACE_END;
 }
 
 inline void EConstraint::caseSIN(){

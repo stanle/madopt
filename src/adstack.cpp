@@ -24,85 +24,98 @@ ADStack::ADStack(Idx initsize, Idx init_jac_nodes, Idx init_hess_nodes):
     jac_mempool(init_jac_nodes), 
     hess_mempool(init_hess_nodes),
     elems(initsize, ADStackElem(jac_mempool, hess_mempool)),
-    top(elems.begin())
-    {}
+    top_idx(0)
+    {
+        TRACE("constructor");
+    }
 
 ADStack::~ADStack(){ 
     elems.clear(); 
 }
 
 inline void ADStack::ensureElemOnTop(){
-    if (top == elems.end()){
+    TRACE_START;
+    ASSERT_BETWEEN(0, top_idx, elems.size());
+    if (top_idx == elems.size()){
         elems.emplace_back(jac_mempool, hess_mempool);
-        top = elems.end() - 1;
+        top_idx = elems.size()-1;
     }
+    TRACE_END;
 }
 
 ADStackElem& ADStack::back(Idx idx) { 
-    ASSERT(top != elems.begin());
-    return *(top-1-idx);
+    ASSERT_BETWEEN(1, top_idx, elems.size());
+    ASSERT_BETWEEN(0, idx, size()-1);
+    return elems[top_idx-1-idx];
 }
 
 const ADStackElem& ADStack::back(Idx idx)const { 
-    ASSERT(top != elems.end());
-    return *(top-1-idx);
-}
-
-deque<ADStackElem>::iterator ADStack::backIterator(Idx idx){
-    return top-1-idx;
+    ASSERT_BETWEEN(1, top_idx, elems.size());
+    ASSERT_BETWEEN(0, idx, size()-1);
+    return elems[top_idx-1-idx];
 }
 
 void ADStack::emplace_back(const double& g, const Idx& idx){
+    TRACE_START;
     ensureElemOnTop();
-    top->emplace(g,idx);
-    top++;
+    elems[top_idx].emplace(g, idx);
+    top_idx++;
+    ASSERT_BETWEEN(1, top_idx, elems.size());
+    TRACE_END;
 }
 
 void ADStack::emplace_back(const double& g){
+    TRACE_START;
     ensureElemOnTop();
-    top->g = g;
-    top++;
+    elems[top_idx].g = g;
+    top_idx++;
+    ASSERT_BETWEEN(1, top_idx, elems.size());
+    TRACE_END;
 }
 
 void ADStack::emplace_backSQR(const double& g, const Idx& idx){ 
     ensureElemOnTop();
-    top->emplaceSQR(g, idx);
-    top++;
+    elems[top_idx].emplaceSQR(g, idx);
+    top_idx++;
+    ASSERT_BETWEEN(1, top_idx, elems.size());
 }
 
 void ADStack::pop_back(Idx counter) { 
+    TRACE_START;
+    ASSERT_LE(counter,  size());
     for (Idx i=0; i<counter; i++){
-        assert(top != elems.begin());
-        top--; 
-        top->clear();
+        ASSERT_UEQ(top_idx, 0);
+        top_idx --;
+        elems[top_idx].clear();
     }
+    ASSERT_BETWEEN(0, top_idx, elems.size());
+    TRACE_END;
 }
 
 void ADStack::clear() { 
-    for (auto iter=elems.begin(); iter!=top; iter++)
-        iter->clear();
-    top = elems.begin();
-    assert(jac_mempool.full());
-    assert(hess_mempool.full());
+    TRACE_START;
+    TRACE("stack=", toString());
+    for (Idx i=0; i<top_idx; i++)
+        elems[i].clear();
+    top_idx = 0;
+    ASSERT(jac_mempool.full());
+    ASSERT(hess_mempool.full());
+    TRACE_END;
 }
 
 string ADStack::toString()const{
     string res;
-    int i=0;
-    for (auto iter=elems.begin(); iter!=top; iter++)
-        res += std::to_string(i++) + ": " + iter->toString() + "\n";
+    for (Idx i=0; i<top_idx; i++)
+        res += std::to_string(i) + ": " + elems[i].toString() + "\n";
     return res;
 }
 
 Idx ADStack::size()const{
-    Idx i=0;
-    for (auto iter=elems.begin(); iter!=top; iter++)
-        i++;
-    return i;
+    return top_idx;
 }
 
 bool ADStack::empty()const{
-    return (top == elems.begin());
+    return (top_idx == 0);
 }
 
 void ADStack::optimizeAlignment(){

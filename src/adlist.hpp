@@ -19,6 +19,7 @@
 
 #include "node.hpp"
 #include "mempool.hpp"
+#include "logger.hpp"
 
 namespace MadOpt {
 
@@ -26,7 +27,12 @@ template<class T>
 class ADList: public Node<T>{
     public:
         ADList(MemPool<T>& p): mempool(p){}
-        ~ADList(){ clear(); }
+
+        ~ADList(){ 
+            TRACE_START;
+            clear(); 
+            TRACE_END;
+        }
 
         void clear(){
             pNode<T> tmp;
@@ -101,8 +107,9 @@ class ADList: public Node<T>{
                 }
             }
 
-            if (siter != src.end())
+            if (siter != src.end()){
                 dprev->setNext(siter);
+            }
         }
 
 
@@ -227,10 +234,13 @@ class ADList: public Node<T>{
         }
 
         string toString()const{
+            //TRACE_START;
             string res;
             for (auto n=begin(); n!=end(); n=n->next()){
-                res += n->toString() + " ";
+                //TRACE("node=", n->toString());
+                res += "(" + n->toString() + ") ";
             }
+            //TRACE_END;
             return res;
         }
 

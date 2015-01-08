@@ -16,7 +16,7 @@
 #ifndef MADOPT_STACK_H
 #define MADOPT_STACK_H
 
-#include <deque>
+#include <vector>
 
 #include "mempool.hpp"
 #include "adstackelem.hpp"
@@ -29,13 +29,9 @@ class ADStack{
 
         ~ADStack();
 
-        inline void ensureElemOnTop();
-
-        ADStackElem& back(Idx idx=0) ;
+        ADStackElem& back(Idx idx=0);
 
         const ADStackElem& back(Idx idx=0)const ;
-
-        deque<ADStackElem>::iterator backIterator(Idx idx=0);
 
         void emplace_back(const double& g, const Idx& idx);
 
@@ -58,8 +54,10 @@ class ADStack{
     private:
         JacMemPool jac_mempool;
         HessMemPool hess_mempool;
-        deque<ADStackElem> elems;
-        deque<ADStackElem>::iterator top;
+        vector<ADStackElem> elems;
+        Idx top_idx;
+
+        inline void ensureElemOnTop();
 };
 
 }

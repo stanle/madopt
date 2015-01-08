@@ -17,6 +17,9 @@
 #ifndef MADOPT_NODE_H
 #define MADOPT_NODE_H
 
+#include <string.h>
+#include "logger.hpp"
+
 namespace MadOpt {
 
 template<class T>
@@ -50,12 +53,20 @@ class Node{
             value = v;
         }
 
-        string toString()const {
-            return to_string(idx) + "=" + doubleToString(value);
+        std::string toString()const {
+            std::string res = to_string(idx) + "|" 
+                + to_string((long)this) + "="
+                + doubleToString(value) 
+                + " next=";
+            if (_next == nullptr)
+                return res + "none";
+            return res + to_string(_next->idx);
         }
 
         T idx;
         double value=0;
+
+        DEBUG_CODE(bool unused=true);
 
     protected:
         pNode<T> _next=nullptr;

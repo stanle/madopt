@@ -22,9 +22,9 @@
 
 namespace MadOpt {
  
-//#define ENABLE_LOGGING
+//#define ENABLE_TRACING
 //#define ENABLE_VALGRIND_DEBUGGING
-#define ENABLE_ASSERTS
+//#define ENABLE_ASSERTS
 
 template<typename TF>
 void write_debug_output( std::ostream & out, TF const& f ) {
@@ -57,8 +57,6 @@ struct tracer {
     void write() {}
 };
 
-#define TRACE_LEVEL 2
-
 #define THIS_FILE (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #define PRINT_STUFF_OUT(...) tracer( std::cout, THIS_FILE, __LINE__, __func__ ).write( __VA_ARGS__ )
@@ -66,7 +64,7 @@ struct tracer {
 // Logger stuff
 //
 //
-#ifdef ENABLE_LOGGING
+#ifdef ENABLE_TRACING
 #define TRACE(...) PRINT_STUFF_OUT(__VA_ARGS__)
 #else
 #define TRACE(...) 
@@ -74,7 +72,6 @@ struct tracer {
 
 #define TRACE_END TRACE("End")
 #define TRACE_START TRACE("Start")
-#define LOG(level, ...) if (level <= TRACE_LEVEL) TRACE(__VA_ARGS__)
 
 // debug stuff
 //
@@ -117,6 +114,33 @@ struct tracer {
         }\
     } while(0)
 
+#define ASSERT_LE(a,b,...) do { \
+        if (a<=b) {} else {\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT(#a, "!<=", #b);\
+            PRINT_STUFF_OUT(a, "!<=", b);\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+        }\
+    } while(0)
+
+#define ASSERT_BETWEEN(a,b,c,...) do { \
+        if (a<=b) {} else {\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT(#a, "!<=", #b);\
+            PRINT_STUFF_OUT(a, "!<=", b);\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+        }\
+        if (b<=c) {} else{\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT(#b, "!<=", #c);\
+            PRINT_STUFF_OUT(b, "!<=", c);\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+        }\
+    } while(0)
+
 #define ASSERT_UEQ(a,b,...) do { \
         if (a!=b) {} else {\
             PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
@@ -127,11 +151,16 @@ struct tracer {
         }\
     } while(0)
 
+#define DEBUG_CODE(a) a
+
 #else
 #define ASSERT_ENABLED false
 #define ASSERT(...)
 #define ASSERT_EQ(...)
+#define ASSERT_LE(...)
 #define ASSERT_UEQ(...)
+#define ASSERT_BETWEEN(...)
+#define DEBUG_CODE(a)
 #endif
 
 }

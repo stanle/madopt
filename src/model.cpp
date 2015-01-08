@@ -307,16 +307,20 @@ Solution::SolverStatus Model::status()const {
 }
 
 Var Model::addVar(double lb, double ub, VarType type, double init, string name){
+    TRACE_START;
     InnerVar* v = new InnerVar(lb, ub, init, type, name, solution);
     v->setPos(vars.size());
     vars.push_back(v);
     model_changed = true;
+    TRACE_END;
     return Var(v);
 }
 
 Param Model::addParam(const double value, const string name){
+    TRACE_START;
     InnerParam* p = new InnerParam(value, name);
     params.push_back(p);
+    TRACE_END;
     return Param(p);
 }
 

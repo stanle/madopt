@@ -38,7 +38,9 @@ class MemPool{
         }
 
         void setUnused(pNode<T> node){ 
-            TRACE(node);
+            ASSERT(!node->unused, node, (long)node);
+            DEBUG_CODE(node->unused = true);
+            TRACE(node, "|", ((long)node));
             node->setNext(begin);
             begin = node;
             balance_counter--;
@@ -49,14 +51,17 @@ class MemPool{
             balance_counter++;
             if (begin == nullptr){
                 pNode<T> new_node  = new Node<T>(next, idx, value);
-                TRACE(new_node, "new");
+                TRACE(new_node, (long)new_node, "new");
+                DEBUG_CODE(new_node->unused = false);
                 return new_node;
             } else {
                 pNode<T> new_node = begin;
+                ASSERT(new_node->unused);
                 begin = begin->next();
                 node_counter--;
                 new_node->emplace(next, idx, value);
-                TRACE(new_node, "old");
+                TRACE(new_node, (long)new_node, "old");
+                DEBUG_CODE(new_node->unused = false);
                 return new_node;
             }
         }

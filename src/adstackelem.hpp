@@ -32,6 +32,10 @@ typedef ADList<PII> HessList;
 
 struct ADStackElem{
     ADStackElem(JacMemPool& pj, HessMemPool& ph);
+    ADStackElem(const ADStackElem& other);
+    ADStackElem(ADStackElem&& other) noexcept;
+
+    ~ADStackElem();
 
     void clear();
 
