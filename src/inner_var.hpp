@@ -69,7 +69,7 @@ class InnerVar{
 
         bool is_fixed=false;
 
-        inline void checkBounds();
+        void checkBounds();
 };
 }
 #endif

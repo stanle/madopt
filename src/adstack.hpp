@@ -57,7 +57,7 @@ class ADStack{
         vector<ADStackElem> elems;
         Idx top_idx;
 
-        inline void ensureElemOnTop();
+        void ensureElemOnTop();
 };
 
 }

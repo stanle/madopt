@@ -141,11 +141,11 @@ class Expr{
         string getContent(list<Operator>::const_iterator& iter,
                 string delimeter)const;
 
-        inline Expr& addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool op);
+        Expr& addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool op);
 
-        inline Expr& addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op);
+        Expr& addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op);
 
-        inline int inner(const Expr& a, OPType& type, bool& op);
+        int inner(const Expr& a, OPType& type, bool& op);
 
         double x(list<Operator>::const_iterator& iter)const;
 };

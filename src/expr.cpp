@@ -319,7 +319,7 @@ string Expr::getContent(list<Operator>::const_iterator& iter,
     return res;
 }
 
-inline Expr& Expr::addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool op){
+ Expr& Expr::addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool op){
     if (x) return *this;
     if (y){ *this = a; return *this; }
     int offset = inner(a, type, op);
@@ -330,7 +330,7 @@ inline Expr& Expr::addOrMulOp(bool x, bool y, const Expr& a, OPType type, bool o
     return *this;
 }
 
-inline Expr& Expr::addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op){
+ Expr& Expr::addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op){
     if (x) return *this;
     if (y){ *this = a; return *this; }
     int offset = inner(a, type, op);
@@ -343,7 +343,7 @@ inline Expr& Expr::addOrMulOp(bool x, bool y, Expr&& a, OPType type, bool op){
     return *this;
 }
 
-inline int Expr::inner(const Expr& a, OPType& type, bool& op){
+ int Expr::inner(const Expr& a, OPType& type, bool& op){
     if (getType() != type)
         ops.emplace_front(type, 1);
 

@@ -29,9 +29,6 @@ EConstraint::EConstraint(const Expr& expr, const double _lb, const double _ub, A
     _ub(_ub),
     stack(stack)
 {
-    //lbs.push_back(_lb);
-    //ubs.push_back(_ub);
-
     auto& ops = expr.getOps();
     for (auto iter=ops.rbegin(); iter!=ops.rend(); iter++){
         auto op = *iter;
@@ -59,22 +56,18 @@ EConstraint::EConstraint(const Expr& expr, ADStack& stack):
     EConstraint(expr, 0, 0, stack){}
 
 double EConstraint::lb(){
-    //return lbs[0];
     return _lb; 
 }
 
-void EConstraint::lb(double v, Idx idx){
-    //lbs[idx] = v;
+void EConstraint::lb(double v){
     _lb=v;
 }
 
 double EConstraint::ub(){
-    //return ubs[0];
     return _ub; 
 }
 
-void EConstraint::ub(double v, Idx idx){
-    //ubs[idx] = v;
+void EConstraint::ub(double v){
     _ub=v;
 }
 
@@ -83,6 +76,7 @@ Idx EConstraint::getNNZ_Jac(){
     return jac.size(); 
 }
 
+//void EConstraint::init(HessPosMap& hess_pos_map, ADStack& stack){
 void EConstraint::init(HessPosMap& hess_pos_map){
     TRACE_START;
     stack.clear();
@@ -160,7 +154,7 @@ const string EConstraint::toString() const {
     return opsToString();
 }
 
-inline double EConstraint::getX(const double* x, Idx index)const{
+ double EConstraint::getX(const double* x, Idx index)const{
     return (x==nullptr) ? (0) : (x[index]);
 }
 
@@ -169,36 +163,12 @@ void EConstraint::computeFinalStack(const double* x){
     Idx data_i = 0;
     for (auto& op: operators){
         switch(op){
-            case OP_VAR_POINTER:{
-                TRACE("Variable");
-                auto pos = getNextPos(data_i);
-                stack.emplace_back(getX(x, pos), pos);
+            case OP_VAR_POINTER:
+                caseVAR(x, getNextPos(data_i));
                 break;
-            }
-
-            case OP_SQR_VAR:{
-                TRACE("Squared Variable");
-                auto pos = getNextPos(data_i);
-                stack.emplace_backSQR(getX(x, pos), pos);
-                break;
-            }
 
             case OP_CONST:
-                TRACE("Constant");
-                stack.emplace_back(getNextValue(data_i));
-                break;
-
-            case OP_PARAM_POINTER:
-                TRACE("Parameter");
-                stack.emplace_back(getNextParamValue(data_i));
-                break;
-
-            case OP_ADD_CONST:
-                stack.back().g += getNextValue(data_i);
-                break;
-
-            case OP_MUL_CONST:
-                stack.back().mulAll(getNextValue(data_i));
+                caseCONST(getNextValue(data_i));
                 break;
 
             case OP_ADD:
@@ -207,6 +177,10 @@ void EConstraint::computeFinalStack(const double* x){
 
             case OP_MUL:
                 caseMUL(getNextCounter(data_i));
+                break;
+
+            case OP_POW:
+                casePOW(getNextValue(data_i));
                 break;
 
             case OP_COS:
@@ -221,8 +195,23 @@ void EConstraint::computeFinalStack(const double* x){
                 caseTAN();
                 break;
 
-            case OP_POW:
-                casePOW(getNextValue(data_i));
+            case OP_SQR_VAR:{
+                TRACE("Squared Variable");
+                auto pos = getNextPos(data_i);
+                stack.emplace_backSQR(getX(x, pos), pos);
+                break;
+            }
+
+            case OP_PARAM_POINTER:
+                caseCONST(getNextParamValue(data_i));
+                break;
+
+            case OP_ADD_CONST:
+                stack.back().g += getNextValue(data_i);
+                break;
+
+            case OP_MUL_CONST:
+                stack.back().mulAll(getNextValue(data_i));
                 break;
 
             default:
@@ -232,50 +221,15 @@ void EConstraint::computeFinalStack(const double* x){
     TRACE_END;
 }
 
-//inline void EConstraint::caseADD(const Idx& counter){
-//    TRACE_START;
-//    TRACE("counter=", counter);
-//    Idx stepsize = 1;
-//    auto frst_pos = stack.backIterator(counter-1);
-//    auto iter = frst_pos;
-//
-//    TRACE("start while loop");
-//    while (2*stepsize <= counter){
-//        iter = frst_pos;
-//        ldiv_t divres = ldiv(counter, 2*stepsize);
-//        TRACE("Stack=\n", stack.toString());
-//        TRACE("stepsize=", stepsize, 
-//                "div quot=", divres.quot, 
-//                "div rest=", divres.rem);
-//        for (int i=0; i <divres.quot ; ++i) {
-//            auto m1 = iter;
-//            iter += stepsize;
-//            m1->hess.mergeInto(iter->hess);
-//            m1->jac.mergeInto(iter->jac);
-//            m1->g += iter->g;
-//            iter += stepsize;
-//            TRACE("after i=", i, "Stack=\n", stack.toString());
-//        }
-//
-//        TRACE("after loop Stack=\n", stack.toString());
-//        if (divres.rem >= stepsize){
-//            auto m1 = iter - 2*stepsize;
-//            TRACE("merge=", iter->toString());
-//            TRACE("merge into=", m1->toString());
-//            m1->hess.mergeInto(iter->hess);
-//            m1->jac.mergeInto(iter->jac);
-//            m1->g += iter->g;
-//        }
-//        TRACE("after rest Stack=\n", stack.toString());
-//
-//        stepsize *= 2;
-//    }
-//    stack.pop_back(counter-1);
-//    TRACE("End Stack=\n", stack.toString());
-//    TRACE_END;
-//}
+void EConstraint::caseVAR(const double* x, const Idx& pos){
+    stack.emplace_back(getX(x, pos), pos);
+}
 
-inline void EConstraint::caseADD(const Idx& counter){
+void EConstraint::caseCONST(const double& value){
+    stack.emplace_back(value);
+}
+
+ void EConstraint::caseADD(const Idx& counter){
     TRACE_START;
     TRACE("counter=", counter,
             "stack=\n", stack.toString());
@@ -336,7 +290,7 @@ inline void EConstraint::caseADD(const Idx& counter){
     TRACE_END;
 }
 
-inline void EConstraint::caseMUL(const Idx& counter){
+ void EConstraint::caseMUL(const Idx& counter){
     TRACE_START;
     ADStackElem& res = stack.back(counter-1);
     for (Idx i=0; i<counter-1; i++){
@@ -351,28 +305,28 @@ inline void EConstraint::caseMUL(const Idx& counter){
     TRACE_END;
 }
 
-inline void EConstraint::caseSIN(){
+void EConstraint::caseSIN(){
     ADStackElem& top = stack.back();
     double _cos = ::cos(top.g);
     top.g = ::sin(top.g);
     doHessJacs(top, _cos, -top.g);
 }
 
-inline void EConstraint::caseCOS(){
+void EConstraint::caseCOS(){
     ADStackElem& top = stack.back();
     double _sin = ::sin(top.g);
     top.g = ::cos(top.g);
     doHessJacs(top, -_sin, -top.g);
 }
 
-inline void EConstraint::caseTAN(){
+void EConstraint::caseTAN(){
     ADStackElem& top = stack.back();
     top.g = ::tan(top.g);
     double _sec = 1 + ::pow(top.g, 2);
     doHessJacs(top, _sec, -top.g);
 }
 
-inline void EConstraint::casePOW(const double& value){
+void EConstraint::casePOW(const double& value){
     ADStackElem& top = stack.back();
     double pow_hess(1);
     if (value != 2)
@@ -383,24 +337,24 @@ inline void EConstraint::casePOW(const double& value){
     doHessJacs(top, jac, hess);
 }
 
-inline void EConstraint::doHessJacs(ADStackElem& top, double frst, double scd){
+void EConstraint::doHessJacs(ADStackElem& top, double frst, double scd){
     top.hess.mergeInto(top.jac, top.jac, frst, scd);
     top.jac.mulAll(frst);
 }
 
-inline double EConstraint::getNextValue(Idx& idx){
+double EConstraint::getNextValue(Idx& idx){
     return reinterpret_cast<const double&>(data[idx++]);
 }
 
-inline Idx EConstraint::getNextCounter(Idx& idx){
+Idx EConstraint::getNextCounter(Idx& idx){
     return data[idx++];
 }
 
-inline Idx EConstraint::getNextPos(Idx& idx){
+Idx EConstraint::getNextPos(Idx& idx){
     return (reinterpret_cast<InnerVar*>(data[idx++]))->getPos();
 }
 
-inline double EConstraint::getNextParamValue(Idx& idx){
+double EConstraint::getNextParamValue(Idx& idx){
     return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
 }
 

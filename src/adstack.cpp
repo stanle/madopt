@@ -33,7 +33,7 @@ ADStack::~ADStack(){
     elems.clear(); 
 }
 
-inline void ADStack::ensureElemOnTop(){
+void ADStack::ensureElemOnTop(){
     TRACE_START;
     ASSERT_BETWEEN(0, top_idx, elems.size());
     if (top_idx == elems.size()){

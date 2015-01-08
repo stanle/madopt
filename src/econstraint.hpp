@@ -38,15 +38,16 @@ class EConstraint: public InnerConstraint{
 
         double lb();
 
-        void lb(double v, Idx idx=0);
+        void lb(double v);
 
         double ub();
 
-        void ub(double v, Idx idx=0);
+        void ub(double v);
 
         Idx getNNZ_Jac();
 
         void init(HessPosMap& hess_pos_map);
+        //void init(HessPosMap& hess_pos_map, ADStack& stack);
 
         vector<Idx> getJacEntries();
 
@@ -62,9 +63,6 @@ class EConstraint: public InnerConstraint{
         vector<OPType> operators;
         vector<uintptr_t> data;
 
-        //vector<double> lbs;
-        //vector<double> ubs;
-
         double _lb;
         double _ub;
 
@@ -72,31 +70,35 @@ class EConstraint: public InnerConstraint{
 
         set<Idx> getVarsSet();
 
-        inline double getX(const double* x, Idx index)const;
+        double getX(const double* x, Idx index)const;
 
         void computeFinalStack(const double* x=nullptr);
 
-        inline void caseADD(const Idx& counter);
+        void caseVAR(const double* x, const Idx& pos);
 
-        inline void caseMUL(const Idx& counter);
+        void caseCONST(const double& value);
 
-        inline void caseSIN();
+        void caseADD(const Idx& counter);
 
-        inline void caseCOS();
+        void caseMUL(const Idx& counter);
 
-        inline void caseTAN();
+        void caseSIN();
 
-        inline void casePOW(const double& value);
+        void caseCOS();
 
-        inline void doHessJacs(ADStackElem& top, double frst, double scd);
+        void caseTAN();
 
-        inline double getNextValue(Idx& idx); 
+        void casePOW(const double& value);
 
-        inline Idx getNextCounter(Idx& idx);
+        void doHessJacs(ADStackElem& top, double frst, double scd);
 
-        inline Idx getNextPos(Idx& idx);
+        double getNextValue(Idx& idx); 
 
-        inline double getNextParamValue(Idx& idx);
+        Idx getNextCounter(Idx& idx);
+
+        Idx getNextPos(Idx& idx);
+
+        double getNextParamValue(Idx& idx);
 };
 
 }

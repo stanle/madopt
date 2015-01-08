@@ -127,11 +127,11 @@ class MemPool{
             node_counter = 0;
         }
 
-        inline pNode<T> itemsFirst() {
+        pNode<T> itemsFirst() {
             return &(items.data()[0]);
         }
 
-        inline pNode<T> itemsLast() {
+        pNode<T> itemsLast() {
             return &(items.data()[items.size()-1]);
         }
 };
