@@ -25,6 +25,8 @@ namespace MadOpt {
 
 class ADStack{
     public:
+        ADStack(const ADStack&);
+
         ADStack(Idx initsize=0, Idx init_jac_nodes=0, Idx init_hess_nodes=0);
 
         ~ADStack();
@@ -46,6 +48,14 @@ class ADStack{
         string toString()const;
 
         Idx size()const;
+
+        Idx capacity()const;
+
+        Idx jac_mempool_capacity()const;
+
+        Idx hess_mempool_capacity()const;
+
+        void reserve(Idx new_size, Idx new_jac_size=0, Idx new_hess_size=0);
 
         bool empty()const;
 

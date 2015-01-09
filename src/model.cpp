@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <thread>
+#include <cstdlib>
+
 #include "model.hpp"
 
 #include "common.hpp"
@@ -50,9 +54,9 @@ void Model::init(){
 
     vector<double> x(nx());
 
-    obj->init(hess_pos_map, x.data());
+    obj->init(hess_pos_map, x.data(), &stack);
     for (auto& constr: constraints){
-        constr->init(hess_pos_map, x.data());
+        constr->init(hess_pos_map, x.data(), &stack);
     }
 
     stack.clear();
@@ -118,7 +122,7 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
         if (&solution != &sol)
             throw MadOptError("cannot add variable from other model to this model");
     }
-    auto con = new InnerConstraint(expr, lb, ub, stack);
+    auto con = new InnerConstraint(expr, lb, ub);
     constraints.push_back(con);
     model_changed = true;
     return Constraint(this, constraints.size()-1);
@@ -147,7 +151,7 @@ void Model::setObj(InnerConstraint* constraint){
 }
 
 void Model::setObj(const Expr& expr){
-    setObj(new InnerConstraint(expr, stack));
+    setObj(new InnerConstraint(expr));
 }
 
 //NLP init stuff
@@ -234,10 +238,11 @@ Idx Model::np() const{
 // Eval functions
 // 
 // 
+
 void Model::setEvals(const double* x){
-    obj->setEvals(x);
+    obj->setEvals(x, &stack);
     for (auto& constraint: constraints)
-        constraint->setEvals(x);
+        constraint->setEvals(x, &stack);
 }
 
 void Model::eval_f(const double* x, bool new_x, double& obj_value){

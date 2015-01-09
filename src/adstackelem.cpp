@@ -33,10 +33,10 @@ ADStackElem::ADStackElem(ADStackElem&& other) noexcept: g(other.g), jac(other.ja
 ADStackElem::ADStackElem(const ADStackElem& other): g(other.g), jac(other.jac), hess(other.hess){
     TRACE_START;
     TRACE("copy constructor");
+    ASSERT_EQ(0, jac.size());
+    ASSERT_EQ(0, hess.size());
     jac.setNext(other.jac.begin());
     hess.setNext(other.hess.begin());
-    ASSERT(false, "not save to use");
-    abort();
     TRACE_END;
 }
 

@@ -28,8 +28,7 @@ class MemPool{
     public:
         MemPool(Idx initsize=0): 
             node_counter(initsize), 
-            balance_counter(0)
-        {
+            balance_counter(0) {
             optimizeAlignment();
         } 
 
@@ -70,8 +69,20 @@ class MemPool{
             return node_counter; 
         }
 
+        Idx capacity()const {
+            return node_counter + balance_counter;
+        }
+
         bool full()const {
             return (balance_counter == 0); 
+        }
+
+        void reserve(Idx new_size) {
+            ASSERT_EQ(balance_counter, 0);
+            if (new_size > size()){
+                node_counter = new_size;
+                optimizeAlignment();
+            }
         }
 
         void optimizeAlignment(){

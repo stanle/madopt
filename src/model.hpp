@@ -209,6 +209,9 @@ class Model {
         Solution solution;
 
         Var addVar(double lb, double ub, VarType type, double init, string name);
+
+        //void eval_obj(const double*, ADStack&);
+
 };
 }
 #endif

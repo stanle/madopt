@@ -20,6 +20,13 @@
 
 namespace MadOpt {
 
+ADStack::ADStack(const ADStack& other):
+    jac_mempool(other.jac_mempool_capacity()),
+    hess_mempool(other.hess_mempool_capacity()),
+    elems(other.size(), ADStackElem(jac_mempool, hess_mempool)),
+    top_idx(0)
+    {}
+
 ADStack::ADStack(Idx initsize, Idx init_jac_nodes, Idx init_hess_nodes):
     jac_mempool(init_jac_nodes), 
     hess_mempool(init_hess_nodes),
@@ -114,6 +121,10 @@ Idx ADStack::size()const{
     return top_idx;
 }
 
+Idx ADStack::capacity()const{
+    return elems.size();
+}
+
 bool ADStack::empty()const{
     return (top_idx == 0);
 }
@@ -121,6 +132,26 @@ bool ADStack::empty()const{
 void ADStack::optimizeAlignment(){
     jac_mempool.optimizeAlignment();
     hess_mempool.optimizeAlignment();
+}
+
+Idx ADStack::jac_mempool_capacity()const {
+    return jac_mempool.size();
+}
+
+Idx ADStack::hess_mempool_capacity()const {
+    return hess_mempool.size();
+}
+
+void ADStack::reserve(Idx new_size, Idx new_jac_size, Idx new_hess_size){
+    ASSERT(empty());
+    if (new_size > elems.size()){
+        elems.reserve(new_size);
+        Idx a = new_size-elems.size();
+        for (Idx i=0; i<a; i++)
+            elems.emplace_back(jac_mempool, hess_mempool);
+    }
+    jac_mempool.reserve(new_jac_size);
+    hess_mempool.reserve(new_hess_size);
 }
 
 }

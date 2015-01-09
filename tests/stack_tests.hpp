@@ -29,10 +29,10 @@ class ADStackTest: public CxxTest::TestSuite {
             JacMemPool jmp(l1idx.size() + l2idx.size());
             JacList l1(jmp), l2(jmp);
 
-            for (int i=0; i<l1idx.size(); i++)
+            for (size_t i=0; i<l1idx.size(); i++)
                 l1.emplace_front(l1idx[i], l1val[i]);
 
-            for (int i=0; i<l2idx.size(); i++)
+            for (size_t i=0; i<l2idx.size(); i++)
                 l2.emplace_front(l2idx[i], l2val[i]);
 
             l1.mergeInto(l2, m1, m2);
@@ -53,14 +53,14 @@ class ADStackTest: public CxxTest::TestSuite {
             HessMemPool hmp(residx.size());
             JacList l1(jmp), l2(jmp);
 
-            for (int i=0; i<l1idx.size(); i++)
+            for (size_t i=0; i<l1idx.size(); i++)
                 l1.emplace_front(l1idx[i], l1val[i]);
 
-            for (int i=0; i<l2idx.size(); i++)
+            for (size_t i=0; i<l2idx.size(); i++)
                 l2.emplace_front(l2idx[i], l2val[i]);
 
             HessList hl(hmp);
-            for (int i=0; i<hidx.size(); i++)
+            for (size_t i=0; i<hidx.size(); i++)
                 hl.emplace_front(hidx[i], hval[i]);
 
             hl.mergeInto(l1, l2, m1, m2);
@@ -75,22 +75,50 @@ class ADStackTest: public CxxTest::TestSuite {
             }
         }
 
+        void testMemPoolSize(){
+            JacMemPool p(23);
+            TS_ASSERT_EQUALS(p.capacity(), 23);
+            TS_ASSERT_EQUALS(p.size(), 23);
+
+            Idx i = 1;
+            double v = 1;
+            pJacNode s = p.getNewNode(nullptr, i, v);
+
+            TS_ASSERT_EQUALS(p.capacity(), 23);
+            TS_ASSERT_EQUALS(p.size(), 22);
+
+            p.setUnused(s);
+
+            TS_ASSERT_EQUALS(p.capacity(), 23);
+            TS_ASSERT_EQUALS(p.size(), 23);
+
+            p.reserve(12);
+
+            TS_ASSERT_EQUALS(p.capacity(), 23);
+            TS_ASSERT_EQUALS(p.size(), 23);
+
+            p.reserve(45);
+
+            TS_ASSERT_EQUALS(p.capacity(), 45);
+            TS_ASSERT_EQUALS(p.size(), 45);
+        }
 
         void testCreate(){
              JacMemPool p(3);
              JacList l(p);
              l.emplace_front(1, 1);
-             pJacNode n = l.begin();
         }
         
         void testEmplaceFront(){
              JacMemPool p(4);
+             TS_ASSERT_EQUALS(p.capacity(), 4);
              JacList l(p);
              l.emplace_front(4, 4);
              l.emplace_front(3, 3);
              l.emplace_front(2, 2);
              l.emplace_front(1, 1);
              TS_ASSERT_EQUALS(p.size(), 0);
+             TS_ASSERT_EQUALS(p.capacity(), 4);
              int i=1;
              for (auto node=l.begin(); node != l.end(); node = node->next()){
                  TS_ASSERT_EQUALS(node->idx, i);
@@ -107,6 +135,7 @@ class ADStackTest: public CxxTest::TestSuite {
              l.emplace_front(2, 2);
              l.emplace_front(1, 1);
              TS_ASSERT_EQUALS(p.size(), 0);
+             TS_ASSERT_EQUALS(p.capacity(), 4);
              l.mulAll(3);
              int i=1;
              for (auto node=l.begin(); node != l.end(); node = node->next()){
@@ -114,6 +143,7 @@ class ADStackTest: public CxxTest::TestSuite {
                  TS_ASSERT_EQUALS(node->value, 3*(double)i);
                  i++;
              }
+             TS_ASSERT_EQUALS(p.capacity(), 4);
         }
 
         void testMergeInto(){
@@ -140,23 +170,45 @@ class ADStackTest: public CxxTest::TestSuite {
        void testEmpty(){
            ADStack stack;
 
-           TS_ASSERT_EQUALS(stack.size(), 0);
+           TS_ASSERT_EQUALS(stack.capacity(), 0);
            TS_ASSERT_EQUALS(stack.empty(), true);
 
            stack.emplace_back(12);
            stack.emplace_back(12);
 
-           TS_ASSERT_EQUALS(stack.size(), 2);
+           TS_ASSERT_EQUALS(stack.capacity(), 2);
            TS_ASSERT_EQUALS(stack.empty(), false);
 
            stack.pop_back();
 
+           TS_ASSERT_EQUALS(stack.capacity(), 2);
            TS_ASSERT_EQUALS(stack.size(), 1);
            TS_ASSERT_EQUALS(stack.empty(), false);
 
            stack.pop_back();
 
+           TS_ASSERT_EQUALS(stack.capacity(), 2);
            TS_ASSERT_EQUALS(stack.size(), 0);
            TS_ASSERT_EQUALS(stack.empty(), true);
+       }
+
+       void testReserve(){
+           ADStack stack(1, 2, 3);
+
+           TS_ASSERT_EQUALS(stack.capacity(), 1);
+           TS_ASSERT_EQUALS(stack.jac_mempool_capacity(), 2);
+           TS_ASSERT_EQUALS(stack.hess_mempool_capacity(), 3);
+
+           stack.reserve(10, 20, 30);
+
+           TS_ASSERT_EQUALS(stack.capacity(), 10);
+           TS_ASSERT_EQUALS(stack.jac_mempool_capacity(), 20);
+           TS_ASSERT_EQUALS(stack.hess_mempool_capacity(), 30);
+
+           stack.reserve(1, 2, 3);
+
+           TS_ASSERT_EQUALS(stack.capacity(), 10);
+           TS_ASSERT_EQUALS(stack.jac_mempool_capacity(), 20);
+           TS_ASSERT_EQUALS(stack.hess_mempool_capacity(), 30);
        }
 };

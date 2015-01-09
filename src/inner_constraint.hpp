@@ -30,9 +30,9 @@ class ADStackElem;
 
 class InnerConstraint{
     public:
-        InnerConstraint(const Expr& expr, const double _lb, const double _ub, ADStack& stack);
+        InnerConstraint(const Expr& expr, const double _lb, const double _ub);
 
-        InnerConstraint(const Expr& expr, ADStack& stack);
+        InnerConstraint(const Expr& expr);
 
         // bounds
         //
@@ -52,12 +52,12 @@ class InnerConstraint{
 
         void getNZ_Jac(unsigned int* jCol);
 
-        void init(HessPosMap& hess_pos_map, const double* x);
+        void init(HessPosMap& hess_pos_map, const double* x, ADStack* stack);
 
         // compute next point
         //
         //
-        void setEvals(const double* x);
+        void setEvals(const double* x, ADStack* stack);
 
         // access next points solution
         //
@@ -92,8 +92,6 @@ class InnerConstraint{
 
         vector<uintptr_t> data;
 
-        ADStack& stack;
-
         double g;
 
         double _lb;
@@ -102,23 +100,23 @@ class InnerConstraint{
 
         set<Idx> getVarsSet();
 
-        void computeFinalStack(const double* x);
+        void computeFinalStack(const double* x, ADStack* stack);
 
-        void caseVAR(const double* x, const Idx& pos);
+        void caseVAR(const double* x, const Idx& pos, ADStack* stack);
 
-        void caseCONST(const double& value);
+        void caseCONST(const double& value, ADStack* stack);
 
-        void caseADD(const Idx& counter);
+        void caseADD(const Idx& counter, ADStack* stack);
 
-        void caseMUL(const Idx& counter);
+        void caseMUL(const Idx& counter, ADStack* stack);
 
-        void caseSIN();
+        void caseSIN(ADStack* stack);
 
-        void caseCOS();
+        void caseCOS(ADStack* stack);
 
-        void caseTAN();
+        void caseTAN(ADStack* stack);
 
-        void casePOW(const double& value);
+        void casePOW(const double& value, ADStack* stack);
 
         void doHessJacs(ADStackElem& top, double frst, double scd);
 
