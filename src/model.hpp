@@ -185,7 +185,13 @@ class Model {
         //! timelimit, a negative value is interpreted as no time limit
         double timelimit=-1;
 
-        const vector<InnerVar*> getVars()const { return vars; }
+        const vector<InnerVar*>& getVars()const { return vars; }
+
+        double lb(Idx idx) const;
+        void lb(Idx idx, double v);
+
+        double ub(Idx idx) const;
+        void ub(Idx idx, double v);
 
         const string toString()const;
 

@@ -34,7 +34,9 @@ class EConstraintTest: public CxxTest::TestSuite {
             ADStack stack;
             InnerConstraint e(exp, stack);
             HessPosMap hess_pos_map;
-            e.init(hess_pos_map);
+            double* xx = new double[x.size()];
+            e.init(hess_pos_map, xx);
+            delete xx;
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)

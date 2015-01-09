@@ -49,9 +49,6 @@ void IpoptModel::solve(){
     if (timelimit >= 0)
         setNumericOption("max_cpu_time", timelimit);
 
-    if (show_solver)
-        std::cout<<"Start Ipopt Application"<<std::endl;
-
     if (model_changed)
         impl->Iapp.OptimizeTNLP(impl->ipopt_callback);
     else

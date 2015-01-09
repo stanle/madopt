@@ -18,13 +18,12 @@
 #include <cmath>
 #include "inner_constraint.hpp"
 #include "logger.hpp"
+#include "exceptions.hpp"
 #include "solution.hpp"
 #include "expr.hpp"
 #include "common.hpp"
 #include "adstack.hpp"
 #include "adstackelem.hpp"
-#include "logger.hpp"
-#include "exceptions.hpp"
 #include "operator.hpp"
 
 namespace MadOpt {
@@ -37,25 +36,6 @@ void InnerConstraint::eval_h(double* values, const double& lambda){
         values[hess_map[i]] += lambda * hess[i];
     }
 }
-
-void InnerConstraint::setPos(Idx epos) {
-    pos = epos; 
-}
-
-Idx InnerConstraint::getPos()const {
-    return pos; 
-}
-
-
-void InnerConstraint::setSolutionClass(Solution* sol){
-    this->sol = sol; 
-}
-
-
-double InnerConstraint::lam()const {
-    return sol->lam(pos); 
-};
-
 
 const double& InnerConstraint::getG()const { 
     return g; 
@@ -126,11 +106,11 @@ Idx InnerConstraint::getNNZ_Jac(){
     return jac.size(); 
 }
 
-void InnerConstraint::init(HessPosMap& hess_pos_map){
+void InnerConstraint::init(HessPosMap& hess_pos_map, const double* x){
     TRACE_START;
     stack.clear();
     ASSERT(stack.size() == 0);
-    computeFinalStack();
+    computeFinalStack(x);
     ASSERT(stack.size() == 1);
 
     hess_map.clear();
@@ -203,12 +183,9 @@ const string InnerConstraint::toString() const {
     return opsToString();
 }
 
- double InnerConstraint::getX(const double* x, Idx index)const{
-    return (x==nullptr) ? (0) : (x[index]);
-}
-
 void InnerConstraint::computeFinalStack(const double* x){
     TRACE_START;
+    ASSERT(x != nullptr);
     Idx data_i = 0;
     for (auto& op: operators){
         switch(op){
@@ -247,7 +224,7 @@ void InnerConstraint::computeFinalStack(const double* x){
             case OP_SQR_VAR:{
                 TRACE("Squared Variable");
                 auto pos = getNextPos(data_i);
-                stack.emplace_backSQR(getX(x, pos), pos);
+                stack.emplace_backSQR(x[pos], pos);
                 break;
             }
 
@@ -271,7 +248,7 @@ void InnerConstraint::computeFinalStack(const double* x){
 }
 
 void InnerConstraint::caseVAR(const double* x, const Idx& pos){
-    stack.emplace_back(getX(x, pos), pos);
+    stack.emplace_back(x[pos], pos);
 }
 
 void InnerConstraint::caseCONST(const double& value){

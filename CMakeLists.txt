@@ -37,6 +37,7 @@ include_directories(
 
 add_library(madopt STATIC
     ${SRC_DIR}/model.cpp
+    ${SRC_DIR}/constraint.cpp
     ${SRC_DIR}/common.cpp
     ${SRC_DIR}/expr.cpp
     ${SRC_DIR}/inner_var.cpp

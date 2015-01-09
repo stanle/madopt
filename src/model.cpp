@@ -43,18 +43,19 @@ Model::~Model(){
 
 void Model::init(){
     TRACE_START;
-    if (show_solver)
-        cout<<"Starting Init"<<endl;
-
     hess_pos_map.clear();
 
     if (obj == nullptr)
         throw MadOptError("no objective set");
 
-    obj->init(hess_pos_map);
+    double* x = new double[nx()];
+
+    obj->init(hess_pos_map, x);
     for (auto& constr: constraints){
-        constr->init(hess_pos_map);
+        constr->init(hess_pos_map, x);
     }
+
+    delete x;
 
     stack.clear();
 
@@ -64,8 +65,6 @@ void Model::init(){
     obj_jac_map.resize(obj->getNNZ_Jac());
     obj->getNZ_Jac(obj_jac_map.data());
 
-    if (show_solver)
-        cout<<"init end"<<endl;
     TRACE_END;
 }
 
@@ -122,11 +121,9 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
             throw MadOptError("cannot add variable from other model to this model");
     }
     auto con = new InnerConstraint(expr, lb, ub, stack);
-    con->setPos(constraints.size());
-    con->setSolutionClass(&solution);
     constraints.push_back(con);
     model_changed = true;
-    return Constraint(con);
+    return Constraint(this, constraints.size()-1);
 }
 
 Constraint Model::addEqConstr(const Expr& expr, const double equal){
@@ -334,4 +331,26 @@ const string Model::toString()const {
     return res;
 
 }
+
+double Model::lb(Idx idx)const {
+    ASSERT_LE(idx, constraints.size()-1);
+    return constraints[idx]->lb();
+}
+
+void Model::lb(Idx idx, double v){
+    ASSERT_LE(idx, constraints.size()-1);
+    constraints[idx]->lb(v);
+}
+
+double Model::ub(Idx idx)const {
+    ASSERT_LE(idx, constraints.size()-1);
+    return constraints[idx]->ub();
+}
+
+void Model::ub(Idx idx, double v){
+    ASSERT_LE(idx, constraints.size()-1);
+    constraints[idx]->ub(v);
+}
+
+
 /* ex: set tabstop=4 shiftwidth=4 expandtab: */
