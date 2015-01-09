@@ -48,14 +48,12 @@ void Model::init(){
     if (obj == nullptr)
         throw MadOptError("no objective set");
 
-    double* x = new double[nx()];
+    vector<double> x(nx());
 
-    obj->init(hess_pos_map, x);
+    obj->init(hess_pos_map, x.data());
     for (auto& constr: constraints){
-        constr->init(hess_pos_map, x);
+        constr->init(hess_pos_map, x.data());
     }
-
-    delete x;
 
     stack.clear();
 
