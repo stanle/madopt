@@ -46,6 +46,7 @@ add_library(madopt STATIC
     ${SRC_DIR}/var.cpp
     ${SRC_DIR}/adstack.cpp
     ${SRC_DIR}/adstackelem.cpp
+    ${SRC_DIR}/threadpool.cpp
 	)
 
 install(TARGETS madopt ARCHIVE DESTINATION lib)
