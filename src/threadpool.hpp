@@ -29,7 +29,7 @@ class ADStack;
 
 class ThreadPool {
     public:
-        ThreadPool(InnerConstraint**, size_t, ADStack&);
+        ThreadPool(InnerConstraint*, InnerConstraint**, size_t, ADStack&);
         
         ~ThreadPool();
 
@@ -40,23 +40,29 @@ class ThreadPool {
 
         std::mutex lock;
 
-        std::mutex waiting_lock;
-
         std::condition_variable thread_wait;
 
         std::condition_variable main_wait;
 
         InnerConstraint** constraints;
 
+        InnerConstraint* obj;
+
         size_t size;
 
         const double* xx = nullptr;
 
-        size_t current_pos;
-
         bool stop = false;
 
-        void thread_function(ADStack&);
+        ADStack& stack;
+
+        size_t finished_threads;
+
+        size_t count;
+
+        size_t start_pos;
+
+        void thread_function(ADStack&, size_t, size_t);
 };
 
 }

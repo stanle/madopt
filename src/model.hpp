@@ -26,7 +26,7 @@
 
 namespace MadOpt {
 
-class ThreadPool;
+//class ThreadPool;
 
 //! generic Model class, not for direct use hence the constructor is protected
 class Model {
@@ -210,7 +210,7 @@ class Model {
         HessPosMap hess_pos_map;
         Solution solution;
 
-        ThreadPool* threadpool=nullptr;
+        //ThreadPool* threadpool=nullptr;
 
         Var addVar(double lb, double ub, VarType type, double init, string name);
 };

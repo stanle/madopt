@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <thread>
-
 #include "model.hpp"
 
 #include "common.hpp"
@@ -25,7 +23,7 @@
 #include "inner_constraint.hpp"
 #include "constraint.hpp"
 #include "logger.hpp"
-#include "threadpool.hpp"
+//#include "threadpool.hpp"
 
 using namespace MadOpt;
 
@@ -43,8 +41,8 @@ Model::~Model(){
         delete obj;
     }
 
-    if (threadpool != nullptr)
-        delete threadpool;
+//    if (threadpool != nullptr)
+//        delete threadpool;
 }
 
 void Model::init(){
@@ -65,10 +63,10 @@ void Model::init(){
 
     stack.optimizeAlignment();
 
-    if (threadpool != nullptr)
-        delete threadpool;
-
-    threadpool = new ThreadPool(constraints.data(), constraints.size(), stack);
+//    if (threadpool != nullptr)
+//        delete threadpool;
+//
+//    threadpool = new ThreadPool(obj, constraints.data(), constraints.size(), stack);
 
     obj_jac_map.clear();
     obj_jac_map.resize(obj->getNNZ_Jac());
@@ -246,22 +244,16 @@ Idx Model::np() const{
 // 
 // 
 
-//void Model::setEvals(const double* x){
-//    obj->setEvals(x, &stack);
-//    for (auto& constraint: constraints)
-//        constraint->setEvals(x, &stack);
-//}
-//
-
-void eval_obj(InnerConstraint* obj, const double* x, ADStack& stack){
-    obj->setEvals(x, &stack);
-}
-
 void Model::setEvals(const double* x){
-    thread t(&eval_obj, obj, x, std::ref(stack));
-    threadpool->setEvals(x);
-    t.join();
+    obj->setEvals(x, &stack);
+    for (auto& constraint: constraints)
+        constraint->setEvals(x, &stack);
 }
+
+
+//void Model::setEvals(const double* x){
+//    threadpool->setEvals(x);
+//}
 
 void Model::eval_f(const double* x, bool new_x, double& obj_value){
     if (new_x) setEvals(x);
