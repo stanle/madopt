@@ -87,16 +87,10 @@ void ADStack::emplace_backSQR(const double& g, const Idx& idx){
     ASSERT_BETWEEN(1, top_idx, elems.size());
 }
 
-void ADStack::pop_back(Idx counter) { 
-    TRACE_START;
-    ASSERT_LE(counter,  size());
-    for (Idx i=0; i<counter; i++){
-        ASSERT_UEQ(top_idx, 0);
-        top_idx --;
-        elems[top_idx].clear();
-    }
-    ASSERT_BETWEEN(0, top_idx, elems.size());
-    TRACE_END;
+ADStackElem& ADStack::pop_back() { 
+    ASSERT_UEQ(top_idx, 0);
+    top_idx --;
+    return elems[top_idx];
 }
 
 void ADStack::clear() { 

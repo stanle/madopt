@@ -21,19 +21,20 @@
 #include "inner_param.hpp"
 #include "exceptions.hpp"
 
-#define OP_ADD 0
+#define OP_VAR_POINTER 0
 #define OP_CONST 1
-#define OP_VAR_POINTER 2
+#define OP_ADD 2
 #define OP_MUL 3
-#define OP_SIN 4
-#define OP_COS 5
-#define OP_POW 6
-#define OP_ADD_CONST 7
-#define OP_MUL_CONST 8
-#define OP_SQR_VAR 9
-#define OP_VAR_IDX 10
-#define OP_PARAM_POINTER 11
-#define OP_TAN 12
+#define OP_POW 4
+#define OP_SQR_VAR 5
+#define OP_PARAM_POINTER 6
+#define OP_SIN 7
+#define OP_COS 8
+#define OP_TAN 9
+
+#define OP_VAR_IDX 20
+#define OP_MUL_CONST 21
+#define OP_ADD_CONST 22
 
 namespace MadOpt {
 

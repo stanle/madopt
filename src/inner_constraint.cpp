@@ -188,11 +188,14 @@ void InnerConstraint::computeFinalStack(const double* x, ADStack* stack){
     for (auto& op: operators){
         switch(op){
             case OP_VAR_POINTER:
-                caseVAR(x, getNextPos(data_i), stack);
+                {
+                    auto pos = getNextPos(data_i);
+                    stack->emplace_back(x[pos], pos);
+                }
                 break;
 
             case OP_CONST:
-                caseCONST(getNextValue(data_i), stack);
+                stack->emplace_back(getNextValue(data_i));
                 break;
 
             case OP_ADD:
@@ -207,147 +210,60 @@ void InnerConstraint::computeFinalStack(const double* x, ADStack* stack){
                 casePOW(getNextValue(data_i), stack);
                 break;
 
-            case OP_COS:
-                caseCOS(stack);
+            case OP_SQR_VAR:
+                {
+                    auto pos = getNextPos(data_i);
+                    stack->emplace_backSQR(x[pos], pos);
+                }
                 break;
-
-            case OP_SIN:
-                caseSIN(stack);
-                break;
-
-            case OP_TAN:
-                caseTAN(stack);
-                break;
-
-            case OP_SQR_VAR:{
-                TRACE("Squared Variable");
-                auto pos = getNextPos(data_i);
-                stack->emplace_backSQR(x[pos], pos);
-                break;
-            }
 
             case OP_PARAM_POINTER:
-                caseCONST(getNextParamValue(data_i), stack);
-                break;
-
-            case OP_ADD_CONST:
-                stack->back().g += getNextValue(data_i);
-                break;
-
-            case OP_MUL_CONST:
-                stack->back().mulAll(getNextValue(data_i));
+                stack->emplace_back(getNextParamValue(data_i));
                 break;
 
             default:
-                throw MadOptError("type not known");
+                caseSimpleUnaryOp(op, stack);
         }
     }
     TRACE_END;
 }
 
-void InnerConstraint::caseVAR(const double* x, const Idx& pos, ADStack* stack){
-    stack->emplace_back(x[pos], pos);
-}
-
-void InnerConstraint::caseCONST(const double& value, ADStack* stack){
-    stack->emplace_back(value);
-}
-
- void InnerConstraint::caseADD(const Idx& counter, ADStack* stack){
+void InnerConstraint::caseADD(const Idx& counter, ADStack* stack){
     TRACE_START;
-    TRACE("counter=", counter,
-            "stack=\n", stack->toString());
-    Idx stepsize = 1;
-    auto iter = counter - 1;
-
-    TRACE("start while loop");
-    while (2*stepsize <= counter){
-        iter = counter - 1;
-        ldiv_t divres = ldiv(counter, 2*stepsize);
-
-        TRACE("before for loop::",
-                "iter=", iter,
-                "stepsize=", stepsize, 
-                "div quot=", divres.quot, 
-                "div rest=", divres.rem,
-                "stack=\n", stack->toString());
-
-        for (int i=0; i <divres.quot ; ++i) {
-            auto& m1 = stack->back(iter);
-            iter -= stepsize;
-            auto& iter_elem = stack->back(iter);
-            m1.hess.mergeInto(iter_elem.hess);
-            m1.jac.mergeInto(iter_elem.jac);
-            m1.g += iter_elem.g;
-            iter -= stepsize;
-            TRACE("after i=", i, 
-                    "iter=", iter, 
-                    "Stack=\n", stack->toString());
+    auto size = counter;
+    Idx steps;
+    while (size > 1) {
+        steps = size / 2;
+        for (size_t i=0; i<steps; i++){
+            ADStackElem& top = stack->pop_back();
+            ADStackElem& res = stack->back(steps-1);
+            res.hess.mergeInto(top.hess);
+            res.jac.mergeInto(top.jac);
+            res.g += top.g;
         }
-
-        TRACE("after for loop",
-                "iter=", iter, 
-                "Stack=\n", stack->toString());
-
-        if (divres.rem >= stepsize){
-            ASSERT_LE(iter, counter-1);
-            auto& m1 = stack->back(iter + 2*stepsize);
-            auto& iter_elem = stack->back(iter);
-            TRACE("merge=", iter_elem.toString());
-            TRACE("merge into=", m1.toString());
-            m1.hess.mergeInto(iter_elem.hess);
-            m1.jac.mergeInto( iter_elem.jac);
-            m1.g += iter_elem.g;
-        }
-
-        stepsize *= 2;
-
-        TRACE("after rest",
-                "stepsize=", stepsize, 
-                "Stack=\n", stack->toString());
+        size -= steps;
     }
-
-    TRACE("end while loop",
-            "counter=", counter);
-    stack->pop_back(counter-1);
-    TRACE("End Stack=\n", stack->toString());
     TRACE_END;
 }
 
  void InnerConstraint::caseMUL(const Idx& counter, ADStack* stack){
     TRACE_START;
-    ADStackElem& res = stack->back(counter-1);
-    for (Idx i=0; i<counter-1; i++){
-        ADStackElem& top = stack->back();
-        res.hess.mergeInto(top.hess, top.g, res.g);
-        res.hess.mergeInto(res.jac, top.jac);
-        res.hess.mergeInto(top.jac, res.jac);
-        res.jac.mergeInto(top.jac, top.g, res.g);
-        res.g *= top.g;
-        stack->pop_back();
+    auto size = counter;
+    Idx steps;
+    while (size > 1) {
+        steps = size / 2;
+        for (size_t i=0; i<steps; i++){
+            ADStackElem& top = stack->pop_back();
+            ADStackElem& res = stack->back(steps-1);
+            res.hess.mergeInto(top.hess, top.g, res.g);
+            res.hess.mergeInto(res.jac, top.jac);
+            res.hess.mergeInto(top.jac, res.jac);
+            res.jac.mergeInto(top.jac, top.g, res.g);
+            res.g *= top.g;
+        }
+        size -= steps;
     }
     TRACE_END;
-}
-
-void InnerConstraint::caseSIN(ADStack* stack){
-    ADStackElem& top = stack->back();
-    double _cos = ::cos(top.g);
-    top.g = ::sin(top.g);
-    doHessJacs(top, _cos, -top.g);
-}
-
-void InnerConstraint::caseCOS(ADStack* stack){
-    ADStackElem& top = stack->back();
-    double _sin = ::sin(top.g);
-    top.g = ::cos(top.g);
-    doHessJacs(top, -_sin, -top.g);
-}
-
-void InnerConstraint::caseTAN(ADStack* stack){
-    ADStackElem& top = stack->back();
-    top.g = ::tan(top.g);
-    double _sec = 1 + ::pow(top.g, 2);
-    doHessJacs(top, _sec, -top.g);
 }
 
 void InnerConstraint::casePOW(const double& value, ADStack* stack){
@@ -358,12 +274,35 @@ void InnerConstraint::casePOW(const double& value, ADStack* stack){
     double hess = pow_hess * value * (value-1);
     double jac = pow_hess * top.g * value;
     top.g = pow_hess * top.g * top.g;
-    doHessJacs(top, jac, hess);
+    top.hess.mergeInto(top.jac, top.jac, jac, hess);
+    top.jac.mulAll(jac);
 }
 
-void InnerConstraint::doHessJacs(ADStackElem& top, double frst, double scd){
-    top.hess.mergeInto(top.jac, top.jac, frst, scd);
-    top.jac.mulAll(frst);
+void InnerConstraint::caseSimpleUnaryOp(OPType& op, ADStack* stack){
+    ADStackElem& top = stack->back();
+    double v1;
+    switch (op) {
+        case OP_SIN:
+            v1 = std::cos(top.g);
+            top.g = std::sin(top.g);
+            break;
+
+        case OP_COS:
+            v1 = -std::sin(top.g);
+            top.g = std::cos(top.g);
+            break;
+
+        case OP_TAN:
+            v1 = 1 + std::pow(top.g, 2);
+            top.g = ::tan(top.g);
+            break;
+
+        default:
+            throw MadOptError("unknown Operator type");
+
+    }
+    top.hess.mergeInto(top.jac, top.jac, v1, -top.g);
+    top.jac.mulAll(v1);
 }
 
 double InnerConstraint::getNextValue(Idx& idx){

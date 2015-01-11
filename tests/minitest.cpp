@@ -71,10 +71,10 @@ void tutorial(double p, int i){
 
     m.solve();
 
-    cout<<m.objValue()<<endl;
     cout<<m.status()<<endl;
     cout<<(m.status()==Solution::SolverStatus::SUCCESS)<< endl;
     cout.precision(30);
+    cout<<m.objValue()<<endl;
     cout<<x[0].x()<<endl;
     cout<<x[1].x()<<endl;
     cout<<x[2].x()<<endl;

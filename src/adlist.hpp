@@ -77,7 +77,7 @@ class ADList: public Node<T>{
             this->_next = mempool.getNewNode(tmp, idx, value);
         }
         
-        void mulAll(double w){
+        void mulAll(double& w){
             for (pNode<T> n=begin(); n!=end(); n=n->next())
                 n->value *= w;
         }
@@ -111,7 +111,6 @@ class ADList: public Node<T>{
                 dprev->setNext(siter);
             }
         }
-
 
         void mergeInto(ADList<T>& src, double wd, double ws){
             pNode<T> dprev = this;

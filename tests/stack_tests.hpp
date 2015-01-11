@@ -136,7 +136,8 @@ class ADStackTest: public CxxTest::TestSuite {
              l.emplace_front(1, 1);
              TS_ASSERT_EQUALS(p.size(), 0);
              TS_ASSERT_EQUALS(p.capacity(), 4);
-             l.mulAll(3);
+             double tmp = 3;
+             l.mulAll(tmp);
              int i=1;
              for (auto node=l.begin(); node != l.end(); node = node->next()){
                  TS_ASSERT_EQUALS(node->idx, i);

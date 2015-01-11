@@ -41,8 +41,8 @@ class ADStack{
         
         void emplace_backSQR(const double& g, const Idx& idx);
 
-        void pop_back(Idx counter=1) ;
-       
+        ADStackElem& pop_back() ;
+
         void clear() ;
 
         string toString()const;

@@ -102,31 +102,21 @@ class InnerConstraint{
 
         void computeFinalStack(const double* x, ADStack* stack);
 
-        void caseVAR(const double* x, const Idx& pos, ADStack* stack);
-
-        void caseCONST(const double& value, ADStack* stack);
-
         void caseADD(const Idx& counter, ADStack* stack);
 
         void caseMUL(const Idx& counter, ADStack* stack);
 
-        void caseSIN(ADStack* stack);
-
-        void caseCOS(ADStack* stack);
-
-        void caseTAN(ADStack* stack);
-
         void casePOW(const double& value, ADStack* stack);
 
-        void doHessJacs(ADStackElem& top, double frst, double scd);
+        void caseSimpleUnaryOp(OPType& op, ADStack*);
 
-        double getNextValue(Idx& idx); 
+        inline double getNextValue(Idx& idx); 
 
-        Idx getNextCounter(Idx& idx);
+        inline Idx getNextCounter(Idx& idx);
 
-        Idx getNextPos(Idx& idx);
+        inline Idx getNextPos(Idx& idx);
 
-        double getNextParamValue(Idx& idx);
+        inline double getNextParamValue(Idx& idx);
 };
 }
 #endif
