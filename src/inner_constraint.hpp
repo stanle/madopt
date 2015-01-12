@@ -52,12 +52,12 @@ class InnerConstraint{
 
         void getNZ_Jac(unsigned int* jCol);
 
-        void init(HessPosMap& hess_pos_map, const double* x, ADStack* stack);
+        void init(HessPosMap& hess_pos_map, ADStack&);
 
         // compute next point
         //
         //
-        void setEvals(const double* x, ADStack* stack);
+        void setEvals(ADStack&);
 
         // access next points solution
         //
@@ -71,10 +71,6 @@ class InnerConstraint{
         // for debug and testing
         //
         //
-        string opsToString()const;
-
-        const string toString() const ;
-
         const vector<double>& getHess()const ;
 
         const vector<Idx>& getHessMap()const;
@@ -100,15 +96,27 @@ class InnerConstraint{
 
         set<Idx> getVarsSet();
 
-        void computeFinalStack(const double* x, ADStack* stack);
+        void computeFinalStack(ADStack&);
 
-        void caseADD(const Idx& counter, ADStack* stack);
+        void caseVAR_POINTER(ADStack&);
 
-        void caseMUL(const Idx& counter, ADStack* stack);
+        void caseSQR_VAR(ADStack&);
 
-        void casePOW(const double& value, ADStack* stack);
+        void caseADD(ADStack&);
 
-        void caseSimpleUnaryOp(OPType& op, ADStack*);
+        void caseMUL(ADStack&);
+
+        void casePARAM_POINTER(ADStack&);
+
+        void caseCONST(ADStack&);
+
+        void casePOW(ADStack&);
+
+        void caseSIN(ADStack&);
+
+        void caseCOS(ADStack&);
+
+        void caseTAN(ADStack&);
 
         inline double getNextValue(Idx& idx); 
 

@@ -61,6 +61,12 @@ class ADStack{
 
         void optimizeAlignment();
 
+        // for testing an algo
+        const double* x;
+
+        // for testing an algo
+        Idx data_i = 0;
+
     private:
         JacMemPool jac_mempool;
         HessMemPool hess_mempool;

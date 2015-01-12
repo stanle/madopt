@@ -54,9 +54,11 @@ void Model::init(){
 
     vector<double> x(nx());
 
-    obj->init(hess_pos_map, x.data(), &stack);
+    stack.x = x.data();
+
+    obj->init(hess_pos_map, stack);
     for (auto& constr: constraints){
-        constr->init(hess_pos_map, x.data(), &stack);
+        constr->init(hess_pos_map, stack);
     }
 
     stack.clear();
@@ -245,9 +247,10 @@ Idx Model::np() const{
 // 
 
 void Model::setEvals(const double* x){
-    obj->setEvals(x, &stack);
+    stack.x = x;
+    obj->setEvals(stack);
     for (auto& constraint: constraints)
-        constraint->setEvals(x, &stack);
+        constraint->setEvals(stack);
 }
 
 

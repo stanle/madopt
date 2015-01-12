@@ -31,11 +31,11 @@ class EConstraintTest: public CxxTest::TestSuite {
                 const vector<double> hess={}, 
                 const double delta=0.000001
                 ){
-            ADStack stack;
             InnerConstraint e(exp);
             HessPosMap hess_pos_map;
-            vector<double> xx(x.size());
-            e.init(hess_pos_map, xx.data(), &stack);
+            ADStack stack;
+            stack.x = x.data();
+            e.init(hess_pos_map, stack);
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)
@@ -47,7 +47,7 @@ class EConstraintTest: public CxxTest::TestSuite {
 
             auto ejace = e.getJacEntries();
 
-            e.setEvals(x.data(), &stack);
+            e.setEvals(stack);
 
             map<int, double> ej;
             auto ejac = e.getJac();

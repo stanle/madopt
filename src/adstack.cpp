@@ -96,6 +96,7 @@ ADStackElem& ADStack::pop_back() {
 void ADStack::clear() { 
     TRACE_START;
     TRACE("stack=", toString());
+    data_i = 0;
     for (Idx i=0; i<top_idx; i++)
         elems[i].clear();
     top_idx = 0;
