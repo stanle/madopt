@@ -197,6 +197,7 @@ void InnerConstraint::caseADD(ADStack& stack){
     TRACE_START;
     auto size = getNextCounter(stack.data_i);
     Idx steps;
+
     while (size > 1) {
         steps = size / 2;
         for (size_t i=0; i<steps; i++){

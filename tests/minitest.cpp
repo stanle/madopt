@@ -28,6 +28,33 @@ void playground(double a, int b){
     std::cout<<x<<std::endl;
 }
 
+void profile(double a, int b){
+    int N = std::pow(10, a);
+
+    IpoptModel m;
+    Expr obj(0);
+    vector<Var> x(N);
+    for (int i=0; i<N; i++){
+        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        obj += pow(x[i] - 1, 2);
+    }
+    m.setObj(obj);
+
+    for (int i=0; i<N-2; i++){
+        double a = double(i+2)/(double)N;
+        m.addEqConstr((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i], 0);
+    }
+
+    vector<double> xx(N, 0);
+
+    m.init();
+
+    for (int i=0; i<b; i++){
+        std::cout<<"run="<<i<<std::endl;
+        m.setEvals(xx.data());
+    }
+}
+
 void test(double d, int i){
     IpoptModel m;
     m.show_solver = true;
@@ -98,7 +125,7 @@ int main(int argc, char* argv[]){
         }
 
     vector<function<void(double, int)> > funcs 
-        = {tutorial, test, playground};
+        = {tutorial, profile, test, playground};
 
     if (func < funcs.size())
         funcs[func](d, n);

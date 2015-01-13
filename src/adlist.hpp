@@ -86,7 +86,6 @@ class ADList: public Node<T>{
             pNode<T> dprev = this;
             auto diter = begin();
             auto siter = src.moveBegin();
-            pNode<T> tmp;
 
             while (siter != src.end() && diter != end()){
                 if (*diter < *siter){
@@ -101,7 +100,7 @@ class ADList: public Node<T>{
                     diter->value += siter->value;
                     diter = diter->next();
                     dprev = dprev->next();
-                    tmp = siter;
+                    pNode<T> tmp = siter;
                     siter = siter->next();
                     mempool.setUnused(tmp);
                 }
@@ -116,7 +115,6 @@ class ADList: public Node<T>{
             pNode<T> dprev = this;
             auto diter = begin();
             auto siter = src.moveBegin();
-            pNode<T> tmp;
 
             while (siter != src.end() && diter != end()){
                 if (*diter < *siter){
@@ -133,7 +131,7 @@ class ADList: public Node<T>{
                     diter->value = wd*diter->value + ws*siter->value;
                     diter = diter->next();
                     dprev = dprev->next();
-                    tmp = siter;
+                    pNode<T> tmp = siter;
                     siter = siter->next();
                     mempool.setUnused(tmp);
                 }
