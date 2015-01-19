@@ -19,6 +19,7 @@
 #include <set>
 #include <vector>
 #include "common.hpp"
+#include "vstack.hpp"
 
 namespace MadOpt {
 
@@ -125,6 +126,28 @@ class InnerConstraint{
         inline Idx getNextPos(Idx& idx);
 
         inline double getNextParamValue(Idx& idx);
+
+        void computeFinalStack(VStack&);
+
+        void caseVAR_POINTER(VStack&);
+
+        void caseSQR_VAR(VStack&);
+
+        void caseVD(VStack&);
+
+        void caseMUL(VStack&);
+
+        void casePARAM_POINTER(VStack&);
+
+        void caseCONST(VStack&);
+
+        void casePOW(VStack&);
+
+        void caseSIN(VStack&);
+
+        void caseCOS(VStack&);
+
+        void caseTAN(VStack&);
 };
 }
 #endif
