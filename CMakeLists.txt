@@ -149,10 +149,10 @@ add_executable(minitest
 	)
 
 target_link_libraries(minitest 
-    ${BONMIN_LIBRARIES} 
-    madopt_bonmin
-    madopt_ipopt
     madopt 
+    madopt_ipopt    
+    madopt_bonmin
+    ${BONMIN_LIBRARIES}     
     ) 
 
 # Test
@@ -175,10 +175,10 @@ if(CXXTEST_FOUND)
         ../${TEST_DIR}/tutorial_obj_term.hpp)
 
     target_link_libraries(unittest_madopt 
-        ${BONMIN_LIBRARIES} 
         madopt
         madopt_ipopt
         madopt_bonmin
+        ${BONMIN_LIBRARIES}         
         ) 
 endif()
 # ex: set tabstop=4 shiftwidth=4 expandtab:
