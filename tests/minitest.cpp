@@ -18,7 +18,7 @@
 #include "../src/bonmin_model.hpp"
 #include <unistd.h>
 #include <cmath>
-
+#include <math.h>
 #include <vector>
 
 using namespace MadOpt;
@@ -58,15 +58,11 @@ void profile(double a, int b){
 void test(double d, int i){
     IpoptModel m;
     m.show_solver = true;
-    Var y = m.addVar(-INF, INF, 5, "x");
-    Var x1 = m.addVar(-INF, INF, "x1");
-
-    m.addEqConstr(y - x1, 0);
-    m.addEqConstr(y*y - x1, 0);
-
+    Var b = m.addVar(0, "b");
+    m.addEqConstr(cos(b), 0);
     m.setObj(Expr(0));
-    std::cout<<m.toString()<<std::endl;
-    //m.solve();
+    m.setStringOption("hessian_approximation", "limited_memory");
+    m.solve();
 }
 
 void constructModel(const int N, IpoptModel& m, vector<Var>& x){

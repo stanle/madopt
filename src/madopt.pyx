@@ -53,6 +53,7 @@ cdef extern from "model.hpp":
         void ub(double) except +
         string name()
         double x()
+        double v()
         double init()
         void init(double) except +
 
@@ -181,7 +182,7 @@ cdef class Expr:
         return self.expr_.toString()
 
     def __str__(self):
-        return self.toString()
+        return self.toString().decode("UTF-8")
 
 
 def sin(Expr ip):
@@ -234,6 +235,10 @@ cdef class Var(Expr):
     @property
     def x(self):
         return self.getVar().x()
+
+    @property
+    def v(self):
+        return self.getVar().v()
 
 cdef class Param(Expr):
     cdef Param_ getParam(self):
@@ -288,21 +293,21 @@ cdef class Model:
         init = init or max(lb, min(ub, 0.0))
         name = name or ('v' + str(self.model_.nx()))
         e = Var()
-        e.expr_ = self.model_.addCVar(lb, ub, init, name)
+        e.expr_ = self.model_.addCVar(lb, ub, init, name.encode('UTF-8'))
         return e
 
     def addIVar(self, lb=-INF, ub=INF, init=None, name=None):
         init = int(init or max(lb, min(ub, 0.0)))
         name = name or ('v' + str(self.model_.nx()))
         e = Var()
-        e.expr_ = self.model_.addIVar(lb, ub, init, name)
+        e.expr_ = self.model_.addIVar(lb, ub, init, name.encode('UTF-8'))
         return e
 
     def addBVar(self, init=None, name=None):
         init = init or 1.0
         name = name or ('v' + str(self.model_.nx()))
         e = Var()
-        e.expr_ = self.model_.addBVar(init, name)
+        e.expr_ = self.model_.addBVar(init, name.encode('UTF-8'))
         return e
 
     # add Param
@@ -328,9 +333,16 @@ cdef class Model:
         c.constraint_ = self.model_.addConstr(lb, expr.expr_, ub)
         return c
 
+    def addEqConstr(self, Expr expr, double eq=0):
+        return self.addConstr(expr, lb=eq, ub=eq)
+
     # get Solution
     #
     #
+    @property
+    def obj(self):
+        return self.model_.objValue()
+
     @property
     def obj_value(self):
         return self.model_.objValue()
@@ -382,10 +394,10 @@ cdef class Model:
     # set Option
     #
     #
-    def setOption(self, str key, value):
-        key = key.encode()
+    def setOption(self, key, value):
+        key = key.encode('UTF-8')
         if isinstance(value, str):
-            value = value.encode()
+            value = value.encode('UTF-8')
             self.model_.setStringOption(key, value)
         elif isinstance(value, int):
             self.model_.setIntegerOption(key, value)

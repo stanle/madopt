@@ -84,6 +84,10 @@ Var Model::addVar(string name){
     return addCVar(-INF, INF, 0, name);
 }
 
+Var Model::addVar(double init, string name){
+    return addCVar(-INF, INF, init, name);
+}
+
 Var Model::addVar(double lb, double ub, double init, string name){
    return addCVar(lb, ub, init, name);
 }

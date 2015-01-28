@@ -70,6 +70,9 @@ class Model {
         Var addVar(double lb, double ub, string name);
 
         //! \sa addVar(double, double, double, string)
+        Var addVar(double init, string name);
+
+        //! \sa addVar(double, double, double, string)
         Var addCVar(double lb, double ub, double init, string name);
 
         //! \sa addVar(double, double, double, string)

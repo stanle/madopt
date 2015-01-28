@@ -89,6 +89,10 @@ double InnerVar::x()const {
     return sol.x(pos); 
 }
 
+double InnerVar::v()const {
+    return sol.v(pos); 
+}
+
 void InnerVar::solAsInit(){
     xi = x(); 
 }

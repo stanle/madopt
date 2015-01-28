@@ -78,8 +78,8 @@ set(IPOPT_LIBS ipopt ${LAPACK_LIB_FN} ${BLAS_LIB_FN} ${HSL} ${MUMPS}
     coinmetis ${EXTRA_LIB})
 
 add_library(madopt_ipopt STATIC
-    ${SRC_DIR}/ipopt_model.cpp
     ${SRC_DIR}/ipopt_nlp.cpp
+    ${SRC_DIR}/ipopt_model.cpp
     )
 
 install(TARGETS madopt_ipopt ARCHIVE DESTINATION lib)
@@ -148,10 +148,10 @@ add_executable(minitest
 )
 
 target_link_libraries(minitest 
-    ${BONMIN_LIBRARIES} 
-    madopt_bonmin
-    madopt_ipopt
     madopt 
+    madopt_ipopt
+    madopt_bonmin
+    ${BONMIN_LIBRARIES} 
     ) 
 
 # Test
@@ -173,10 +173,10 @@ if(CXXTEST_FOUND)
     )
 
     target_link_libraries(unittest_madopt 
-        ${BONMIN_LIBRARIES} 
         madopt
         madopt_ipopt
         madopt_bonmin
+        ${BONMIN_LIBRARIES} 
         ) 
 endif()
 # ex: set tabstop=4 shiftwidth=4 expandtab:
