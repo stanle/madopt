@@ -397,9 +397,14 @@ cdef class IpoptModel(Model):
     def __cinit__(self):
         self.model_ = new IpoptModel_()
 
+    def __dealloc__(self):
+        del self.model_
 
 cdef class BonminModel(Model):
     def __cinit__(self):
         self.model_ = new BonminModel_()
+
+    def __dealloc__(self):
+        del self.model_
 
 # ex: set tabstop=4 shiftwidth=4 expandtab:
