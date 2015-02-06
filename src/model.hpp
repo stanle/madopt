@@ -202,6 +202,7 @@ class Model {
         const string toString()const;
 
         VStack& getStack(){ return stack; }
+        //ADStack& getStack(){ return stack; }
 
     protected:
         bool model_changed=false;
@@ -210,8 +211,8 @@ class Model {
     private:
         vector<InnerParam*> params;
         vector<InnerConstraint*> constraints;
-        //ADStack stack;
         VStack stack;
+        //ADStack stack;
         InnerConstraint* obj=nullptr;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;

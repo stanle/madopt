@@ -37,7 +37,8 @@ class ListStack {
             Idx conflict;
 
             string toString(){
-                return to_string(id) + "=" + std::to_string(value) + "/" + to_string(conflict);
+                return to_string(id) + 
+                    "=" + std::to_string(value) + "/" + to_string(conflict);
             }
         };
 
@@ -255,8 +256,7 @@ class HessListStack : public ListStack<HessPair> {
         }
 
         Idx getLastStackPos(const HessPair& id){
-            if (last_pos_map.size() <= id.first)
-                last_pos_map.resize(id.first+1);
+            ensureMapPosElem(id);
             auto& frstmap = last_pos_map[id.first];
             auto it = frstmap.find(id.second);
             if (it != frstmap.end())
@@ -266,8 +266,7 @@ class HessListStack : public ListStack<HessPair> {
 
         Idx getAndUpdateLastStackPos(const HessPair& id, const Idx& new_conflict_pos){
             Idx conflict=0;
-            if (last_pos_map.size() <= id.first)
-                last_pos_map.resize(id.first+1);
+            ensureMapPosElem(id);
             auto& frstmap = last_pos_map[id.first];
             auto it = frstmap.find(id.second);
             if (it != frstmap.end()){
@@ -280,8 +279,7 @@ class HessListStack : public ListStack<HessPair> {
         }
 
         void setLastStackPos(const HessPair& id, const Idx& conflict){
-            if (last_pos_map.size() <= id.first)
-                last_pos_map.resize(id.first+1);
+            ensureMapPosElem(id);
             last_pos_map[id.first][id.second] = conflict;
         }
 
@@ -301,6 +299,15 @@ class HessListStack : public ListStack<HessPair> {
                 new_elem.conflict = conflict;
                 stack_end++;
             }
+        }
+
+        void ensureMapPosElem(const HessPair& id){
+            if (last_pos_map.size() <= id.first)
+                last_pos_map.resize(id.first+1);
+        }
+
+        Idx getMapPos(const HessPair& id){
+            return id.first;
         }
 };
 
