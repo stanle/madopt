@@ -26,11 +26,10 @@
 #define OP_ADD 2
 #define OP_MUL 3
 #define OP_POW 4
-#define OP_SQR_VAR 5
-#define OP_PARAM_POINTER 6
-#define OP_SIN 7
-#define OP_COS 8
-#define OP_TAN 9
+#define OP_PARAM_POINTER 5
+#define OP_SIN 6
+#define OP_COS 7
+#define OP_TAN 8
 
 #define OP_VAR_IDX 20
 #define OP_MUL_CONST 21
@@ -153,7 +152,7 @@ class Operator{
         }
 
         void checkVarPointer()const {
-            if (type != OP_VAR_POINTER && type != OP_SQR_VAR)
+            if (type != OP_VAR_POINTER)
                 throw MadOptError("wrong use of Expression type");
         }
 

@@ -19,15 +19,12 @@
 #include <set>
 #include <vector>
 #include "common.hpp"
-#include "vstack.hpp"
 
 namespace MadOpt {
 
 class Solution;
-class ADStack;
 class Expr;
 typedef char OPType;
-class ADStackElem;
 class VStack;
 
 class InnerConstraint{
@@ -54,15 +51,11 @@ class InnerConstraint{
 
         void getNZ_Jac(unsigned int* jCol);
 
-        void init(HessPosMap& hess_pos_map, ADStack&);
-
         void init(HessPosMap& hess_pos_map, VStack&);
 
         // compute next point
         //
         //
-        void setEvals(ADStack&);
-
         void setEvals(VStack&);
 
         // access next points solution
@@ -102,37 +95,13 @@ class InnerConstraint{
 
         double _ub;
 
-        //set<Idx> getVarsSet();
-
-        void computeFinalStack(ADStack&);
-
-        void caseVAR_POINTER(ADStack&);
-
-        void caseSQR_VAR(ADStack&);
-
-        void caseADD(ADStack&);
-
-        void caseMUL(ADStack&);
-
-        void casePARAM_POINTER(ADStack&);
-
-        void caseCONST(ADStack&);
-
-        void casePOW(ADStack&);
-
-        void caseSIN(ADStack&);
-
-        void caseCOS(ADStack&);
-
-        void caseTAN(ADStack&);
-
-        inline double getNextValue(Idx& idx); 
+        inline const double& getNextValue(Idx& idx); 
 
         inline Idx getNextCounter(Idx& idx);
 
-        inline Idx getNextPos(Idx& idx);
+        inline const Idx& getNextPos(Idx& idx);
 
-        inline double getNextParamValue(Idx& idx);
+        inline const double& getNextParamValue(Idx& idx);
 
         void computeFinalStack(VStack&);
 

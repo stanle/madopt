@@ -230,7 +230,7 @@ class ExprTest: public CxxTest::TestSuite {
             Tes(pow(a+b,5), "(a+b)^5", OP_POW);
             Tes(pow(a,1), "a", OP_VAR_POINTER);
             Tes(pow(a,0), "1", OP_CONST, true);
-            Tes(pow(a,2), "a^2", OP_SQR_VAR);
+            Tes(pow(a,2), "a^2", OP_POW);
             Tes(pow(pow(a, 2), 3), "a^6", OP_POW);
         }
 

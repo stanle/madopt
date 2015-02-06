@@ -13,25 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MADOPT_INNER_PARAM_H
-#define MADOPT_INNER_PARAM_H
+#ifndef MADOPT_JACSTACK
+#define MADOPT_JACSTACK
+
+#include <vector>
+#include <string.h>
+
+#include "liststack.hpp"
+#include "common.hpp"
 
 namespace MadOpt {
+using namespace std;
 
-class InnerParam{
+class JacStack : public ListStack<Idx> {
     public:
-        InnerParam(const double v, const string& n): _value(v), _name(n){}
+        void emplace_back(const Idx& id, const double& value);
 
-        void value(const double v){ _value = v; }
+        void setXSize(const Idx& size);
 
-        const double& value()const { return _value; }
-
-        string name()const { return _name;}
+        void mulAll(const double& value);
 
     private:
-        double _value;
-        string _name;
+        vector<Idx> last_pos_map;
+        vector<Idx> var_map;
+
+        void clearLastStackPos();
+
+        Idx getAndUpdateLastStackPos(const Idx& id, const Idx& new_conflict_pos);
+
+        void setLastStackPos(const Idx& id, const Idx& conflict);
 };
+
 
 }
 #endif

@@ -35,7 +35,7 @@ class EConstraintTest: public CxxTest::TestSuite {
             HessPosMap hess_pos_map;
             TestModel m;
             auto& stack = m.getStack();
-            stack.x = x.data();
+            stack.setX(x.data(), x.size());
             e.init(hess_pos_map, stack);
 
             map<int, double> jacvm;

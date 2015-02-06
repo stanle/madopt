@@ -18,7 +18,6 @@
 
 #include "common.hpp"
 
-#include "adstack.hpp"
 #include "vstack.hpp"
 #include "var.hpp"
 #include "param.hpp"
@@ -202,7 +201,6 @@ class Model {
         const string toString()const;
 
         VStack& getStack(){ return stack; }
-        //ADStack& getStack(){ return stack; }
 
     protected:
         bool model_changed=false;
@@ -212,13 +210,10 @@ class Model {
         vector<InnerParam*> params;
         vector<InnerConstraint*> constraints;
         VStack stack;
-        //ADStack stack;
         InnerConstraint* obj=nullptr;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;
         Solution solution;
-
-        //ThreadPool* threadpool=nullptr;
 
         Var addVar(double lb, double ub, VarType type, double init, string name);
 };

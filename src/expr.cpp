@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "expr.hpp"
 #include <cmath>
 
@@ -31,11 +32,6 @@ Expr::Expr(const Expr& a, const double& b){
         ops.emplace_front(OP_CONST, 1.);
     } else if (b == 1){
         *this = a;
-    } else if (a.getType() == OP_VAR_POINTER && b == 2){
-        ops.emplace_front(OP_SQR_VAR, a.front().getIVar());
-    } else if (a.getType() == OP_SQR_VAR){
-        ops.emplace_front(OP_VAR_POINTER, a.front().getIVar()); 
-        ops.emplace_front(OP_POW, b*2.); 
     } else {
         *this = a;
         if (getType() == OP_POW){
@@ -203,7 +199,7 @@ bool Expr::isOne()const {
 set<InnerVar*> Expr::getInnerVariables()const {
     set<InnerVar*> vars;
     for (auto op: ops)
-        if (op.getType() == OP_VAR_POINTER || op.getType() == OP_SQR_VAR)
+        if (op.getType() == OP_VAR_POINTER)
             vars.insert(op.getIVar());
     return vars;
 }
@@ -291,8 +287,6 @@ string Expr::toString(list<Operator>::const_iterator& iter)const {
             return "sin(" + toString(++iter) + ")";
         case OP_TAN:
             return "tan(" + toString(++iter) + ")";
-        case OP_SQR_VAR:
-            return op.getIVar()->name() + "^2";
         case OP_PARAM_POINTER:
             return "[" + op.getIParam()->name() + "]";
             //return op.getIParam()->name() + "[" + doubleToString(op.getIParam()->value()) + "]";
@@ -382,8 +376,6 @@ double Expr::x(list<Operator>::const_iterator& iter)const {
             return op.getValue()*x(++iter);
         case OP_POW:
             return std::pow(x(++iter), op.getValue());
-        case OP_SQR_VAR:
-            return std::pow(op.getIVar()->x(), 2);
         case OP_PARAM_POINTER:
             return op.getIParam()->value();
         case OP_COS:

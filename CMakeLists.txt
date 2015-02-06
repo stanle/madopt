@@ -44,9 +44,10 @@ add_library(madopt STATIC
     ${SRC_DIR}/inner_constraint.cpp
     ${SRC_DIR}/solution.cpp
     ${SRC_DIR}/var.cpp
-    ${SRC_DIR}/adstack.cpp
-    ${SRC_DIR}/adstackelem.cpp
-    #${SRC_DIR}/threadpool.cpp
+    ${SRC_DIR}/vstack.cpp
+    ${SRC_DIR}/jacstack.cpp
+    ${SRC_DIR}/hessstack.cpp
+    ${SRC_DIR}/pairhashmap.cpp
 	)
 
 install(TARGETS madopt ARCHIVE DESTINATION lib)
@@ -165,7 +166,6 @@ if(CXXTEST_FOUND)
 
     CXXTEST_ADD_TEST(unittest_madopt unittest_madopt.cpp
         ../${TEST_DIR}/expr_tests.hpp
-        ../${TEST_DIR}/stack_tests.hpp
         ../${TEST_DIR}/econstraint_tests.hpp
         ../${TEST_DIR}/model_tests.hpp
         ../${TEST_DIR}/ipoptmodel_tests.hpp

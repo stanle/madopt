@@ -23,7 +23,6 @@
 #include "inner_constraint.hpp"
 #include "constraint.hpp"
 #include "logger.hpp"
-//#include "threadpool.hpp"
 
 using namespace MadOpt;
 
@@ -40,9 +39,6 @@ Model::~Model(){
     if (obj != nullptr){
         delete obj;
     }
-
-//    if (threadpool != nullptr)
-//        delete threadpool;
 }
 
 void Model::init(){
@@ -53,8 +49,7 @@ void Model::init(){
         throw MadOptError("no objective set");
 
     vector<double> x(nx());
-
-    stack.x = x.data();
+    stack.setX(x.data(), nx());
 
     obj->init(hess_pos_map, stack);
     for (auto& constr: constraints){
@@ -64,11 +59,6 @@ void Model::init(){
     stack.clear();
 
     stack.optimizeAlignment();
-
-//    if (threadpool != nullptr)
-//        delete threadpool;
-//
-//    threadpool = new ThreadPool(obj, constraints.data(), constraints.size(), stack);
 
     obj_jac_map.clear();
     obj_jac_map.resize(obj->getNNZ_Jac());
@@ -251,7 +241,7 @@ Idx Model::np() const{
 // 
 
 void Model::setEvals(const double* x){
-    stack.x = x;
+    stack.setX(x, nx());
     obj->setEvals(stack);
     for (auto& constraint: constraints)
         constraint->setEvals(stack);
