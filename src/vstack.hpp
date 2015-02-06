@@ -18,242 +18,415 @@
 
 #include <vector>
 #include <unordered_map>
+#include <map>
+#include <string.h>
 
+#include "logger.hpp"
 #include "common.hpp"
 
 namespace MadOpt {
 
 using namespace std;
 
-typedef pair<size_t, size_t> MergePair;
-typedef pair<size_t, size_t> HessPair;
-
-class VStack {
+template<class T>
+class ListStack {
     public:
-        VStack(): jac_stack_after_last(0), hess_stack_after_last(0), stack_after_last(0)
-        {}
+        struct StackElem {
+            T id;
+            double value;
+            Idx conflict;
+
+            string toString(){
+                return to_string(id) + "=" + std::to_string(value) + "/" + to_string(conflict);
+            }
+        };
+
+        ListStack(): stack(1), positions(0), stack_end(1), positions_end(0){}
+
+        virtual ~ListStack(){}
+
+        void merge(Idx nofelems){
+            const Idx& prev_start = getPrev(nofelems-1);
+            const Idx& last_start = getPrev(nofelems-2);
+            for (Idx i=stack_end-1; i>=last_start; i--){
+                if (prev_start <= stack[i].conflict)
+                    solveConflict(i);
+            }
+            positions_end -= nofelems-1;
+        }
+
+        void merge(const double mul_with_last, 
+                const double mul_with_prev){
+            TRACE_START;
+            const Idx& prev_start = getPrev();
+            const Idx& last_start = getLast();
+
+            for (Idx i=prev_start; i<last_start; i++)
+                stack[i].value *= mul_with_prev;
+
+            for (Idx i=stack_end-1; i>=last_start; i--){
+                StackElem& elem = stack[i];
+                elem.value *= mul_with_last;
+                if (prev_start <= elem.conflict)
+                    solveConflict(i);
+            }
+            positions_end--;
+            TRACE_END;
+        }
+
+        const vector<StackElem>& getStack(){
+            return stack;
+        }
+
+        const Idx& getEnd(){
+            return stack_end;
+        }
+
+        const Idx& getLast(){
+            return positions[positions_end-1];
+        }
+
+        const Idx& getPrev(Idx pos=1){
+            return positions[positions_end-1-pos];
+        }
+
+        void mulAll(const double& value){
+            for (Idx i=getLast(); i<stack_end; i++)
+                stack[i].value *= value;
+        }
+
+        void emplace_back(const T& id, const double& value){
+            if (stack_end == stack.size())
+                stack.resize(stack.size()+1);
+            StackElem& elem = stack[stack_end];
+            elem.id = id;
+            elem.value = value;
+            elem.conflict = getAndUpdateLastStackPos(id, stack_end);
+            if (positions_end == positions.size())
+                positions.resize(positions.size()+1);
+            positions[positions_end] = stack_end;
+            positions_end++;
+            stack_end++;
+        }
+
+        void emplace_back_empty(){
+            if (positions_end == positions.size())
+                positions.resize(positions.size()+1);
+            positions[positions_end] = stack_end;
+            positions_end++;
+        }
+
+        Idx size(){
+            return positions_end;
+        }
+
+        T& getStackElemId(const Idx& i){
+            return stack[i].id;
+        }
+
+        void fill(double* data){
+            ASSERT_EQ(size(), 1);
+            ASSERT_EQ(getLast(), 1);
+            for (Idx i=getLast(); i<stack_end; i++){
+                auto& elem = stack[i];
+                data[i-1] = elem.value;
+            }
+        }
+
+        Idx length(){
+            return stack_end-1;
+        }
+
+        string toString(){
+            string res;
+            for (Idx i=0; i<positions_end; i++){
+                Idx a = positions[i];
+                Idx b = stack_end;
+                if (i+1 != positions_end)
+                    b = positions[i+1];
+                for (Idx k=a; k<b; k++)
+                    res += to_string(k) + ":" + stack[k].toString() + "\n";
+            }
+            return res;
+        }
 
         void clear(){
-            jac_stack_after_last = 0;
-            hess_stack_after_last = 0;
-            stack_after_last = 0;
+            clearLastStackPos();
+            stack_end = 1;
+            positions_end = 0;
         }
 
-        void mergeLastTwoHess(const double value=1, const double scn_value=1){
-            tmp_hess_map.clear();
-            size_t hess_frstlastpos = stack[hess_stack_after_last-1].hess_stack_pos;
-            size_t hess_scndlastpos = stack[hess_stack_after_last-2].hess_stack_pos;
-            for (size_t i=hess_scndlastpos; i<hess_frstlastpos; i++){
-                HessStackElem& e = hess_stack[i];
-                e.value *= scn_value;
-                tmp_hess_map[e.idx] = i;
-            }
+    protected:
+        vector<StackElem> stack;
+        vector<Idx> positions;
+        Idx stack_end;
+        Idx positions_end;
 
-            for (size_t i=hess_stack_after_last-1; i>=hess_frstlastpos; i--){
-                HessStackElem& e = hess_stack[i];
-                e.value *= value;
-                auto it = tmp_hess_map.find(e.idx);
-                if (it != tmp_hess_map.end()){
-                    hess_stack[it->second].value += e.value;
-                    hess_stack[i] = hess_stack[--hess_stack_after_last];
+        void solveConflict(Idx i){
+            auto& elem = stack[i];
+            stack[elem.conflict].value += elem.value;
+            setLastStackPos(elem.id, elem.conflict);
+            stack_end--;
+            if (stack_end != i){
+                elem = stack[stack_end];
+                setLastStackPos(elem.id, i);
+            }
+        }
+
+        virtual Idx getAndUpdateLastStackPos(const T& id, const Idx& new_conflict_pos)=0;
+        virtual void setLastStackPos(const T& id, const Idx& conflict)=0;
+        virtual void clearLastStackPos()=0;
+
+};
+
+class JacListStack : public ListStack<Idx> {
+    private:
+        vector<Idx> last_pos_map;
+
+        void clearLastStackPos(){
+            for (Idx i=1; i<stack_end; i++){
+                last_pos_map[stack[i].id] = 0;
+            }
+        }
+
+        Idx getAndUpdateLastStackPos(const Idx& id, const Idx& new_conflict_pos){
+            if (id >= last_pos_map.size())
+                last_pos_map.resize(id+1, 0);
+            Idx conflict=last_pos_map[id];
+            last_pos_map[id] = new_conflict_pos;
+            return conflict;
+        }
+
+        virtual void setLastStackPos(const Idx& id, const Idx& conflict){
+            if (id >= last_pos_map.size())
+                last_pos_map.resize(id+1, 0);
+            last_pos_map[id] = conflict;
+        }
+};
+
+typedef pair<Idx, Idx> HessPair;
+
+class HessListStack : public ListStack<HessPair> {
+    public:
+        void mergeJacInto(JacListStack& other){
+            auto& other_stack = other.getStack();
+
+            for (Idx i=other.getPrev(); i<other.getLast(); i++){
+                auto& elem2 = other_stack[i];
+                for (Idx k=other.getLast(); k<other.getEnd(); k++){
+                    auto& elem1 = other_stack[k];
+
+                    double v = elem1.value * elem2.value;
+                    if (elem1.id == elem2.id)
+                        v *= 2;
+                    insertOrUpdatePair(elem1.id, elem2.id, v);
                 }
             }
         }
 
-        void mergeLastTwoJac(const double value=1, const double scn_value=1){
-            tmp_jac_map.clear();
-            size_t jac_frstlastpos = stack[jac_stack_after_last-1].jac_stack_pos;
-            size_t jac_scndlastpos = stack[jac_stack_after_last-2].jac_stack_pos;
-            for (size_t i=jac_scndlastpos; i<jac_frstlastpos; i++){
-                JacStackElem& e = jac_stack[i];
-                if (scn_value != 1)
-                    e.value *= scn_value;
-                tmp_jac_map[e.idx] = i;
-            }
+        void mergeSingle(JacListStack& other, 
+                const double& jac_value, 
+                const double& hess_value){
+            auto& other_stack = other.getStack();
 
-            for (size_t i=jac_stack_after_last-1; i>=jac_frstlastpos; i--){
-                JacStackElem& e = jac_stack[i];
-                if (value != 1)
-                    e.value *= value;
-                auto it = tmp_jac_map.find(e.idx);
-                if (it != tmp_jac_map.end()){
-                    jac_stack[it->second].value += e.value;
-                    jac_stack[i] = jac_stack[--jac_stack_after_last];
+            for (Idx i=getLast(); i<stack_end; i++)
+                stack[i].value *= jac_value;
+
+            for (Idx i=other.getLast(); i<other.getEnd(); i++){
+                auto& elem2 = other_stack[i];
+                for (Idx k=i; k<other.getEnd(); k++){
+                    auto& elem1 = other_stack[k];
+
+                    double v = elem1.value * elem2.value * hess_value;
+                    insertOrUpdatePair(elem1.id, elem2.id, v);
+
                 }
             }
         }
-
-        void mergeLastTwoJacsTwoHess(){
-            tmp_hess_map.clear();
-            size_t hess_frstlastpos = stack[hess_stack_after_last-1].hess_stack_pos;
-            for (size_t i=hess_stack_after_last-1; i>=hess_frstlastpos; i--){
-                HessStackElem& e = hess_stack[i];
-                tmp_hess_map[e.idx] = i;
-            }
-
-            size_t jac_frstlastpos = stack[jac_stack_after_last-1].jac_stack_pos;
-            size_t jac_scndlastpos = stack[jac_stack_after_last-2].jac_stack_pos;
-
-            double res = 1;
-
-            for (size_t i=jac_scndlastpos; i<jac_frstlastpos; i++){
-                JacStackElem& e = jac_stack[i];
-                for (size_t j=jac_stack_after_last-1; j>=jac_frstlastpos; j--){
-                    JacStackElem& f = jac_stack[j];
-                    PII p(uPII(e.idx, f.idx));
-
-                    res = e.value * f.value;
-                    if (e.idx == f.idx)
-                        res *= 2;
-
-                    auto it = tmp_hess_map.find(p);
-                    if (it == tmp_hess_map.end()){
-                        ensureHessStackElem();
-                        hess_stack[hess_stack_after_last].idx = p;
-                        hess_stack[hess_stack_after_last].value = res;
-                        tmp_hess_map[p] = hess_stack_after_last;
-                        hess_stack_after_last++;
-                    } else {
-                        hess_stack[it->second].value += res;
-
-                    }
-                }
-            }
-        }
-
-        void mulAll(const double& v){
-            size_t jac_frstlastpos = stack[jac_stack_after_last-1].jac_stack_pos;
-            for (size_t i=jac_stack_after_last-1; i>=jac_frstlastpos; i--){
-                jac_stack[i].value *= v;
-            }
-        }
-
-        void mergeJacTwoHess(const double& jac_value, const double& hess_value){
-            tmp_hess_map.clear();
-            size_t hess_frstlastpos = stack[hess_stack_after_last-1].hess_stack_pos;
-            for (size_t i=hess_stack_after_last-1; i>=hess_frstlastpos; i--){
-                HessStackElem& e = hess_stack[i];
-                tmp_hess_map[e.idx] = i;
-            }
-
-            size_t jac_frstlastpos = stack[jac_stack_after_last-1].jac_stack_pos;
-
-            double res = 1;
-
-            for (size_t i=jac_stack_after_last-1; i>=jac_frstlastpos; i--){
-                JacStackElem& e = jac_stack[i];
-                for (size_t j=jac_stack_after_last-1; j>=jac_frstlastpos; j--){
-                    JacStackElem& f = jac_stack[j];
-                    PII p(uPII(e.idx, f.idx));
-
-                    res = e.value * f.value * jac_value;
-                    if (e.idx == f.idx)
-                        res *= 2;
-
-                    auto it = tmp_hess_map.find(p);
-                    if (it == tmp_hess_map.end()){
-                        ensureHessStackElem();
-                        hess_stack[hess_stack_after_last].idx = p;
-                        hess_stack[hess_stack_after_last].value = res;
-                        tmp_hess_map[p] = hess_stack_after_last;
-                        hess_stack_after_last++;
-                    } else {
-                        hess_stack[it->second].value *= hess_value;
-                        hess_stack[it->second].value += res;
-                    }
-                }
-            }
-
-        }
-
-        void mergeLastTwoG(){
-
-        }
-
-        double& lastG(){
-            return stack[stack_after_last-1].g;
-        }
-
-        void emplace_back(Idx& idx, const double& value){
-            ensureJackStackElem();
-            VStackElem& e = stack[stack_after_last++];
-            e.g = value;
-            e.jac_stack_pos = jac_stack_after_last;
-            jac_stack[jac_stack_after_last].idx = idx;
-            jac_stack[jac_stack_after_last].value = 1;
-            jac_stack_after_last++;
-            e.hess_stack_pos = hess_stack_after_last;
-        }
-
-        void emplace_backSQR(Idx& idx, const double& value){
-            ensureJackStackElem();
-            VStackElem& e = stack[stack_after_last++];
-            e.g = value;
-            e.jac_stack_pos = jac_stack_after_last;
-            jac_stack[jac_stack_after_last].idx = idx;
-            jac_stack[jac_stack_after_last].value = 2*value;
-            jac_stack_after_last++;
-            e.hess_stack_pos = hess_stack_after_last;
-            hess_stack[hess_stack_after_last].idx = PII(idx, idx);
-            hess_stack[hess_stack_after_last].value = 2;
-            hess_stack_after_last++;
-        }
-
-        void emplace_back(const double& value){
-            ensureJackStackElem();
-            VStackElem& e = stack[stack_after_last++];
-            e.g = value;
-            e.jac_stack_pos = jac_stack_after_last;
-            e.hess_stack_pos = hess_stack_after_last;
-        }
-
-        Idx data_i=0;
-        double* x=nullptr;
 
     private:
-        struct VStackElem {
-            double g;
-            size_t jac_stack_pos;
-            size_t hess_stack_pos;
-        };
+        vector<map<Idx, Idx> > last_pos_map;
 
-        struct JacStackElem {
-            double value;
-            size_t idx;
-        };
-
-        struct HessStackElem {
-            double value;
-            HessPair idx;
-        };
-
-        vector<JacStackElem> jac_stack;
-        vector<HessStackElem> hess_stack;
-        vector<VStackElem> stack;
-
-        size_t jac_stack_after_last;
-        size_t hess_stack_after_last;
-        size_t stack_after_last;
-
-        unordered_map<size_t, size_t> tmp_jac_map;
-        unordered_map<HessPair, size_t> tmp_hess_map;
-
-        unordered_map<size_t, vector<size_t> > jac_map;
-        unordered_map<HessPair, vector<size_t> > hess_map;
-
-        void ensureHessStackElem(){
-            if (hess_stack_after_last == hess_stack.size()){
-                hess_stack.resize(hess_stack.size()+1);
+        void clearLastStackPos(){
+            for (Idx i=1; i<stack_end; i++){
+                auto& id = stack[i].id;
+                last_pos_map[id.first][id.second] = 0;
             }
         }
 
-        void ensureJackStackElem(){
-            if (jac_stack_after_last == jac_stack.size()){
-                jac_stack.resize(jac_stack.size()+1);
+        Idx getLastStackPos(const HessPair& id){
+            if (last_pos_map.size() <= id.first)
+                last_pos_map.resize(id.first+1);
+            auto& frstmap = last_pos_map[id.first];
+            auto it = frstmap.find(id.second);
+            if (it != frstmap.end())
+                return it->second;
+            return 0;
+        }
+
+        Idx getAndUpdateLastStackPos(const HessPair& id, const Idx& new_conflict_pos){
+            Idx conflict=0;
+            if (last_pos_map.size() <= id.first)
+                last_pos_map.resize(id.first+1);
+            auto& frstmap = last_pos_map[id.first];
+            auto it = frstmap.find(id.second);
+            if (it != frstmap.end()){
+                conflict = it->second;
+                it->second = new_conflict_pos;
+            } else 
+                frstmap[id.second] = new_conflict_pos;
+
+            return conflict;
+        }
+
+        void setLastStackPos(const HessPair& id, const Idx& conflict){
+            if (last_pos_map.size() <= id.first)
+                last_pos_map.resize(id.first+1);
+            last_pos_map[id.first][id.second] = conflict;
+        }
+
+        void insertOrUpdatePair(const Idx& frst, const Idx& scd, const double& value){
+            auto p = uPII(frst, scd);
+            Idx conflict = getLastStackPos(p);
+
+            if (conflict >= getLast())
+                stack[conflict].value += value;
+            else {
+                if (stack_end == stack.size())
+                    stack.resize(stack_end+1);
+                setLastStackPos(p, stack_end);
+                auto& new_elem = stack[stack_end];
+                new_elem.id = p;
+                new_elem.value = value;
+                new_elem.conflict = conflict;
+                stack_end++;
             }
         }
 };
 
-}
+class VStack {
+    public:
+        VStack()
+        {}
 
+        void doADD(Idx nofelems){
+            TRACE_START;
+            ASSERT_LE(nofelems, size());
+            jac_stack.merge(nofelems);
+            hess_stack.merge(nofelems);
+
+            for (Idx i=0; i<nofelems-1; i++){
+                double last = g_stack.back();
+                g_stack.pop_back();
+                g_stack.back() += last;
+            }
+
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        void doMUL(){
+            TRACE_START;
+            ASSERT_LE(1, size());
+            double last = g_stack.back();
+            g_stack.pop_back();
+            double& prev = g_stack.back();
+            hess_stack.merge(prev, last);
+            hess_stack.mergeJacInto(jac_stack);
+            jac_stack.merge(prev, last);
+            prev *= last;
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        double& lastG(){
+            return g_stack.back();
+        }
+
+        void doUnaryOp(const double& jac_value, const double& hess_value){
+            TRACE_START;
+            hess_stack.mergeSingle(jac_stack, jac_value, hess_value);
+            jac_stack.mulAll(jac_value);
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        void emplace_back(Idx& id, const double& value){
+            TRACE_START;
+            DEBUG_CODE(Idx s = size());
+            g_stack.emplace_back(value);
+            jac_stack.emplace_back(id, 1);
+            hess_stack.emplace_back_empty();
+            ASSERT_EQ(size(), s+1);
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        void emplace_backSQR(Idx& id, const double& value){
+            TRACE_START;
+            DEBUG_CODE(Idx s = size());
+            g_stack.emplace_back(value*value);
+            jac_stack.emplace_back(id, 2*value);
+            hess_stack.emplace_back(HessPair(id, id), 2);
+            ASSERT_EQ(size(), s+1);
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        void emplace_back(const double& value){
+            TRACE_START;
+            DEBUG_CODE(Idx s = size());
+            g_stack.emplace_back(value);
+            jac_stack.emplace_back_empty();
+            hess_stack.emplace_back_empty();
+            ASSERT_EQ(size(), s+1);
+            ASSERT_EQ(size(), jac_stack.size());
+            ASSERT_EQ(size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        void clear(){
+            TRACE_START;
+            ASSERT_EQ(g_stack.size(), jac_stack.size());
+            ASSERT_EQ(g_stack.size(), hess_stack.size());
+            jac_stack.clear();
+            hess_stack.clear();
+            g_stack.clear();
+            data_i = 0;
+            ASSERT_EQ(g_stack.size(), jac_stack.size());
+            ASSERT_EQ(g_stack.size(), hess_stack.size());
+            TRACE_END;
+        }
+
+        Idx size(){
+            ASSERT_EQ(g_stack.size(), jac_stack.size());
+            ASSERT_EQ(g_stack.size(), hess_stack.size());
+            return g_stack.size();
+        }
+
+        void fill(double* jac, double* hess){
+            jac_stack.fill(jac);
+            hess_stack.fill(hess);
+        }
+
+        void optimizeAlignment(){}
+
+        Idx getNNZ_Jac(){
+            return jac_stack.length();
+        }
+
+        Idx data_i=0;
+        const double* x;
+
+        HessListStack hess_stack;
+        JacListStack jac_stack;
+    private:
+        vector<double> g_stack;
+};
+}
 #endif

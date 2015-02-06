@@ -11,7 +11,7 @@ set(CXX_FLAGS_COM "-std=c++11")
 # cmake automatically sets some flags based on compiler for debug and release
 # Can select which we want with -DCMAKE_BUILD_TYPE=release
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} -Wall -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_PROFILE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_PROFILE} -g -pg")
 

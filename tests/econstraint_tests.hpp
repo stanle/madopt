@@ -33,7 +33,8 @@ class EConstraintTest: public CxxTest::TestSuite {
                 ){
             InnerConstraint e(exp);
             HessPosMap hess_pos_map;
-            ADStack stack;
+            TestModel m;
+            auto& stack = m.getStack();
             stack.x = x.data();
             e.init(hess_pos_map, stack);
 
@@ -45,7 +46,7 @@ class EConstraintTest: public CxxTest::TestSuite {
             for (Idx i=0; i<hess_entries.size(); i++)
                 hessvm[hess_entries[i]] = hess[i];
 
-            auto ejace = e.getJacEntries();
+            const auto& ejace = e.getJacEntries();
 
             e.setEvals(stack);
 
@@ -102,7 +103,9 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             Var a = m.addVar("a");
             Var b = m.addVar("b");
+            Var c = m.addVar("c");
             Tes(a+b, {2, 3}, 2+3, {0, 1}, {1,1});
+            Tes(a+b+c, {2, 3, 4}, 2+3+4, {0, 1, 2}, {1,1,1});
         }
 
         void testMUL(){
@@ -123,6 +126,22 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             Var a = m.addVar("a");
             Tes(cos(2*a), {3}, cos(2*3), {0}, {-2*sin(6)}, {PII(0,0)}, {-4*cos(6)});
+        }
+
+        void testCOS2(){
+            TestModel m;
+            Var a = m.addVar("a");
+            Var b = m.addVar("b");
+            Tes(cos(a*b), {3, 2}, cos(2*3), 
+                    {0, 1}, {-2*sin(6), -3*sin(6)},
+                    {PII(0,0), PII(0,1), PII(1,1)}, 
+                    {-4*cos(6), -sin(6)-6*cos(6), -9*cos(6)});
+        }
+
+        void testSIN(){
+            TestModel m;
+            Var a = m.addVar("a");
+            Tes(sin(2*a), {3}, sin(2*3), {0}, {2*cos(6)}, {PII(0,0)}, {-4*sin(6)});
         }
 
         void testPOW(){

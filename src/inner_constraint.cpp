@@ -25,6 +25,7 @@
 #include "adstack.hpp"
 #include "adstackelem.hpp"
 #include "operator.hpp"
+#include "vstack.hpp"
 
 namespace MadOpt {
 
@@ -126,21 +127,49 @@ void InnerConstraint::init(HessPosMap& hess_pos_map, ADStack& stack){
     jac.clear();
     auto& jaclist = stack.back().jac;
     jac.resize(jaclist.size());
+    jac_entries.resize(jaclist.size());
+    Idx i = 0;
+    for (auto node=jaclist.begin(); node!=jaclist.end(); node=node->next()){
+        jac_entries[i++] = node->idx;
+    }
     TRACE_END;
 }
 
-vector<Idx> InnerConstraint::getJacEntries(){ 
-    vector<Idx> jac_entries(getNNZ_Jac());
-    getNZ_Jac(jac_entries.data());
+void InnerConstraint::init(HessPosMap& hess_pos_map, VStack& stack){
+    TRACE_START;
+    stack.clear();
+    ASSERT_EQ(stack.size(), 0);
+    computeFinalStack(stack);
+    ASSERT_EQ(stack.size(), 1);
+
+    hess_map.clear();
+    auto& hesslist = stack.hess_stack;
+    for (Idx i=1; i<=hesslist.length(); i++){
+        auto& p = hesslist.getStackElemId(i);
+        auto it = hess_pos_map.find(p);
+        if (it == hess_pos_map.end())
+            hess_pos_map[p] = hess_pos_map.size() - 1;
+        hess_map.push_back(hess_pos_map[p]);
+    }
+    hess.resize(hess_map.size());
+
+    jac.resize(stack.getNNZ_Jac());
+    jac_entries.resize(stack.getNNZ_Jac());
+    auto& jaclist = stack.jac_stack;
+    for (Idx i=1; i<=jaclist.length(); i++){
+        jac_entries[i-1] = jaclist.getStackElemId(i);
+    }
+    TRACE_END;
+}
+
+const vector<Idx>& InnerConstraint::getJacEntries(){ 
     return jac_entries;
 }
 
 void InnerConstraint::getNZ_Jac(unsigned int* jCol){
-    auto varset = getVarsSet();
-    ASSERT_EQ(varset.size(), getNNZ_Jac());
     Idx data_i = 0;
-    for (auto idx : varset) 
-        jCol[data_i++] = idx;
+    for (auto id : jac_entries)
+        jCol[data_i++] = id;
 }
 
 void InnerConstraint::setEvals(ADStack& stack){
@@ -154,7 +183,7 @@ void InnerConstraint::setEvals(ADStack& stack){
     g = stack.back().g;
     VALGRIND_CONDITIONAL_JUMP_TEST(g);
 
-    int i = 0;
+    Idx i = 0;
     JacList& jaclist= stack.back().jac;
     for (auto node=jaclist.begin(); node!=jaclist.end(); node=node->next()){
         VALGRIND_CONDITIONAL_JUMP_TEST(node->value);
@@ -167,6 +196,21 @@ void InnerConstraint::setEvals(ADStack& stack){
         VALGRIND_CONDITIONAL_JUMP_TEST(node->value);
         hess[i++] = node->value;
     }
+    TRACE_END;
+}
+
+void InnerConstraint::setEvals(VStack& stack){
+    TRACE_START;
+    stack.clear();
+
+    ASSERT(stack.size() == 0);
+    computeFinalStack(stack);
+    ASSERT(stack.size() == 1);
+
+    g = stack.lastG();
+    VALGRIND_CONDITIONAL_JUMP_TEST(g);
+
+    stack.fill(jac.data(), hess.data());
     TRACE_END;
 }
 
@@ -200,7 +244,7 @@ void InnerConstraint::caseADD(ADStack& stack){
 
     while (size > 1) {
         steps = size / 2;
-        for (size_t i=0; i<steps; i++){
+        for (Idx i=0; i<steps; i++){
             ADStackElem& top = stack.pop_back();
             ADStackElem& res = stack.back(steps-1);
             res.hess.mergeInto(top.hess);
@@ -218,7 +262,7 @@ void InnerConstraint::caseADD(ADStack& stack){
     Idx steps;
     while (size > 1) {
         steps = size / 2;
-        for (size_t i=0; i<steps; i++){
+        for (Idx i=0; i<steps; i++){
             ADStackElem& top = stack.pop_back();
             ADStackElem& res = stack.back(steps-1);
             res.hess.mergeInto(top.hess, top.g, res.g);
@@ -303,131 +347,126 @@ double InnerConstraint::getNextParamValue(Idx& idx){
     return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
 }
 
-set<Idx> InnerConstraint::getVarsSet() {
-    set<Idx> varset;
-    Idx data_i = 0;
-    for (auto op: operators){
-        if (op == OP_VAR_POINTER
-                || op == OP_SQR_VAR){
-            varset.insert(getNextPos(data_i));
-        } else if (op == OP_POW 
-                || op == OP_ADD 
-                || op == OP_MUL
-                || op == OP_PARAM_POINTER
-                || op == OP_CONST)
-            data_i++;
+//set<Idx> InnerConstraint::getVarsSet() {
+//    set<Idx> varset;
+//    Idx data_i = 0;
+//    for (auto op: operators){
+//        if (op == OP_VAR_POINTER
+//                || op == OP_SQR_VAR){
+//            varset.insert(getNextPos(data_i));
+//        } else if (op == OP_POW 
+//                || op == OP_ADD 
+//                || op == OP_MUL
+//                || op == OP_PARAM_POINTER
+//                || op == OP_CONST)
+//            data_i++;
+//    }
+//    return varset;
+//}
+
+void InnerConstraint::computeFinalStack(VStack& stack){
+    TRACE_START;
+    for (auto& op: operators){
+        switch(op){
+            MADOPTCASE(VAR_POINTER)
+            MADOPTCASE(CONST)
+            MADOPTCASE(ADD)
+            MADOPTCASE(MUL)
+            MADOPTCASE(POW)
+            MADOPTCASE(SQR_VAR)
+            MADOPTCASE(PARAM_POINTER)
+            MADOPTCASE(SIN)
+            MADOPTCASE(COS)
+            MADOPTCASE(TAN)
+
+            default:
+                throw MadOptError("unknown operator type found");
+        }
     }
-    return varset;
+    TRACE_END;
 }
 
-//void InnerConstraint::computeFinalStack(VStack& stack){
-//    TRACE_START;
-//    for (auto& op: operators){
-//        switch(op){
-//            MADOPTCASE(VAR_POINTER)
-//            MADOPTCASE(CONST)
-//            MADOPTCASE(ADD)
-//            MADOPTCASE(MUL)
-//            MADOPTCASE(POW)
-//            MADOPTCASE(SQR_VAR)
-//            MADOPTCASE(PARAM_POINTER)
-//            MADOPTCASE(SIN)
-//            MADOPTCASE(COS)
-//            MADOPTCASE(TAN)
-//
-//            default:
-//                throw MadOptError("unknown operator type found");
-//        }
-//    }
-//    TRACE_END;
-//}
-//
-//void InnerConstraint::caseADD(VStack& stack){
-//    TRACE_START;
-//    size_t size = getNextCounter(stack.data_i);
-//    Idx steps;
-//
-//    for (size_t i=0; i<size; i++){
-//        stack.mergeLastTwoHess();
-//        stack.mergeLastTwoJac();
-//        stack.mergeLastTwoG();
-//    }
-//    TRACE_END;
-//}
-//
-// void InnerConstraint::caseMUL(VStack& stack){
-//    TRACE_START;
-//    auto size = getNextCounter(stack.data_i);
-//    Idx steps;
-//    while (size > 1) {
-//        steps = size / 2;
-//        for (size_t i=0; i<steps; i++){
-//            VStackElem& top = stack.pop_back();
-//            VStackElem& res = stack.back(steps-1);
-//            res.hess.mergeInto(top.hess, top.g, res.g);
-//            res.hess.mergeInto(res.jac, top.jac);
-//            res.hess.mergeInto(top.jac, res.jac);
-//            res.jac.mergeInto(top.jac, top.g, res.g);
-//            res.g *= top.g;
-//        }
-//        size -= steps;
-//    }
-//    TRACE_END;
-//}
-//
-//void InnerConstraint::caseVAR_POINTER(VStack& stack){
-//    auto pos = getNextPos(stack.data_i);
-//    stack.emplace_back(stack.x[pos], pos);
-//}
-//
-//void InnerConstraint::caseSQR_VAR(VStack& stack){
-//    auto pos = getNextPos(stack.data_i);
-//    stack.emplace_backSQR(stack.x[pos], pos);
-//}
-//
-//void InnerConstraint::casePARAM_POINTER(VStack& stack){
-//    stack.emplace_back(getNextParamValue(stack.data_i));
-//}
-//
-//void InnerConstraint::caseCONST(VStack& stack){
-//    stack.emplace_back(getNextValue(stack.data_i));
-//}
-//
-//void InnerConstraint::casePOW(VStack& stack){
-//    double value = getNextValue(stack.data_i);
-//    VStackElem& top = stack.back();
-//    double pow_hess(1);
-//    if (value != 2)
-//        pow_hess = std::pow(top.g, value-2);
-//    double hess = pow_hess * value * (value-1);
-//    double jac = pow_hess * top.g * value;
-//    top.g = pow_hess * top.g * top.g;
-//    top.hess.mergeInto(top.jac, top.jac, jac, hess);
-//    top.jac.mulAll(jac);
-//}
-//
-//void InnerConstraint::caseSIN(VStack& stack){
-//    VStackElem& top = stack.back();
-//    double v1 = std::cos(top.g);
-//    top.g = std::sin(top.g);
-//    top.hess.mergeInto(top.jac, top.jac, v1, -top.g);
-//    top.jac.mulAll(v1);
-//}
-//
-//void InnerConstraint::caseCOS(VStack& stack){
-//    VStackElem& top = stack.back();
-//    double v1 = -std::sin(top.g);
-//    top.g = std::cos(top.g);
-//    top.hess.mergeInto(top.jac, top.jac, v1, -top.g);
-//    top.jac.mulAll(v1);
-//}
-//
-//void InnerConstraint::caseTAN(VStack& stack){
-//    VStackElem& top = stack.back();
-//    double v1 = 1 + std::pow(top.g, 2);
-//    top.g = ::tan(top.g);
-//    top.hess.mergeInto(top.jac, top.jac, v1, -top.g);
-//    top.jac.mulAll(v1);
-//}
+void InnerConstraint::caseADD(VStack& stack){
+    TRACE_START;
+    auto size = getNextCounter(stack.data_i);
+    stack.doADD(size);
+    TRACE_END;
+}
+
+void InnerConstraint::caseMUL(VStack& stack){
+   TRACE_START;
+   auto size = getNextCounter(stack.data_i);
+   for (Idx i=0; i<size-1; i++){
+       stack.doMUL();
+   }
+   TRACE_END;
+}
+
+void InnerConstraint::caseVAR_POINTER(VStack& stack){
+   TRACE_START;
+    auto pos = getNextPos(stack.data_i);
+    stack.emplace_back(pos, stack.x[pos]);
+   TRACE_END;
+}
+
+void InnerConstraint::caseSQR_VAR(VStack& stack){
+   TRACE_START;
+    auto pos = getNextPos(stack.data_i);
+    stack.emplace_backSQR(pos, stack.x[pos]);
+   TRACE_END;
+}
+
+void InnerConstraint::casePARAM_POINTER(VStack& stack){
+    TRACE_START;
+    stack.emplace_back(getNextParamValue(stack.data_i));
+    TRACE_END;
+}
+
+void InnerConstraint::caseCONST(VStack& stack){
+   TRACE_START;
+    stack.emplace_back(getNextValue(stack.data_i));
+   TRACE_END;
+}
+
+void InnerConstraint::casePOW(VStack& stack){
+   TRACE_START;
+    double value = getNextValue(stack.data_i);
+    double& g = stack.lastG();
+    double pow_hess(1);
+    if (value != 2)
+        pow_hess = std::pow(g, value-2);
+    double hess = pow_hess * value * (value-1);
+    double jac = pow_hess * g * value;
+    g = pow_hess * g * g;
+    stack.doUnaryOp(jac, hess);
+   TRACE_END;
+}
+
+void InnerConstraint::caseSIN(VStack& stack){
+   TRACE_START;
+    double& g = stack.lastG();
+    double v1 = std::cos(g);
+    g = std::sin(g);
+    stack.doUnaryOp(v1, -g);
+   TRACE_END;
+}
+
+void InnerConstraint::caseCOS(VStack& stack){
+   TRACE_START;
+    double& g = stack.lastG();
+    double v1 = -std::sin(g);
+    g = std::cos(g);
+    stack.doUnaryOp(v1, -g);
+   TRACE_END;
+}
+
+void InnerConstraint::caseTAN(VStack& stack){
+   TRACE_START;
+    double& g = stack.lastG();
+    double v1 = 1 + std::pow(g, 2);
+    g = ::tan(g);
+    stack.doUnaryOp(v1, -g);
+   TRACE_END;
+}
 
 }

@@ -24,8 +24,10 @@
 using namespace MadOpt;
 
 void playground(double a, int b){
-    double x = std::pow(-1, 0.5);
-    std::cout<<x<<std::endl;
+    int N = std::pow(10, a);
+    std::vector<vector<size_t> > data(N);
+//    for (auto& v: data)
+//        v.resize(N);
 }
 
 void profile(double a, int b){

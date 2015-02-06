@@ -28,6 +28,7 @@ class ADStack;
 class Expr;
 typedef char OPType;
 class ADStackElem;
+class VStack;
 
 class InnerConstraint{
     public:
@@ -55,10 +56,14 @@ class InnerConstraint{
 
         void init(HessPosMap& hess_pos_map, ADStack&);
 
+        void init(HessPosMap& hess_pos_map, VStack&);
+
         // compute next point
         //
         //
         void setEvals(ADStack&);
+
+        void setEvals(VStack&);
 
         // access next points solution
         //
@@ -76,7 +81,7 @@ class InnerConstraint{
 
         const vector<Idx>& getHessMap()const;
 
-        vector<Idx> getJacEntries();
+        const vector<Idx>& getJacEntries();
 
     private:
         vector<double> jac;
@@ -84,6 +89,8 @@ class InnerConstraint{
         vector<double> hess;
 
         vector<Idx> hess_map;
+
+        vector<Idx> jac_entries;
 
         vector<OPType> operators;
 
@@ -95,7 +102,7 @@ class InnerConstraint{
 
         double _ub;
 
-        set<Idx> getVarsSet();
+        //set<Idx> getVarsSet();
 
         void computeFinalStack(ADStack&);
 
@@ -127,27 +134,27 @@ class InnerConstraint{
 
         inline double getNextParamValue(Idx& idx);
 
-        //void computeFinalStack(VStack&);
+        void computeFinalStack(VStack&);
 
-        //void caseVAR_POINTER(VStack&);
+        void caseVAR_POINTER(VStack&);
 
-        //void caseSQR_VAR(VStack&);
+        void caseSQR_VAR(VStack&);
 
-        //void caseVD(VStack&);
+        void caseADD(VStack&);
 
-        //void caseMUL(VStack&);
+        void caseMUL(VStack&);
 
-        //void casePARAM_POINTER(VStack&);
+        void casePARAM_POINTER(VStack&);
 
-        //void caseCONST(VStack&);
+        void caseCONST(VStack&);
 
-        //void casePOW(VStack&);
+        void casePOW(VStack&);
 
-        //void caseSIN(VStack&);
+        void caseSIN(VStack&);
 
-        //void caseCOS(VStack&);
+        void caseCOS(VStack&);
 
-        //void caseTAN(VStack&);
+        void caseTAN(VStack&);
 };
 }
 #endif
