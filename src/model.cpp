@@ -49,16 +49,15 @@ void Model::init(){
         throw MadOptError("no objective set");
 
     vector<double> x(nx());
-    stack.setX(x.data(), nx());
+    simstack.setX(x.data(), nx());
 
-    obj->init(hess_pos_map, stack);
+    obj->init(hess_pos_map, simstack);
     for (auto& constr: constraints){
-        constr->init(hess_pos_map, stack);
+        constr->init(hess_pos_map, simstack);
     }
 
-    stack.clear();
-
-    stack.optimizeAlignment();
+    simstack.clear();
+    cstack.resize(simstack);
 
     obj_jac_map.clear();
     obj_jac_map.resize(obj->getNNZ_Jac());
@@ -241,16 +240,11 @@ Idx Model::np() const{
 // 
 
 void Model::setEvals(const double* x){
-    stack.setX(x, nx());
-    obj->setEvals(stack);
+    cstack.setX(x, nx());
+    obj->setEvals(cstack);
     for (auto& constraint: constraints)
-        constraint->setEvals(stack);
+        constraint->setEvals(cstack);
 }
-
-
-//void Model::setEvals(const double* x){
-//    threadpool->setEvals(x);
-//}
 
 void Model::eval_f(const double* x, bool new_x, double& obj_value){
     if (new_x) setEvals(x);

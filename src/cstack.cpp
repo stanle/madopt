@@ -49,5 +49,14 @@ void CStack::setX(const double* xx, const Idx& size){
 void CStack::clear(){
 
 }
+
+void CStack::fill(double* jac, double* hess){
+
+}
+
+void CStack::resize(const SimStack& simstack){
+
+}
+
 }
 

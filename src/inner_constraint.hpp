@@ -25,7 +25,9 @@ namespace MadOpt {
 class Solution;
 class Expr;
 typedef char OPType;
-class VStack;
+class Stack;
+class CStack;
+class SimStack;
 
 class InnerConstraint{
     public:
@@ -51,12 +53,12 @@ class InnerConstraint{
 
         void getNZ_Jac(unsigned int* jCol);
 
-        void init(HessPosMap& hess_pos_map, VStack&);
+        void init(HessPosMap& hess_pos_map, SimStack&);
 
         // compute next point
         //
         //
-        void setEvals(VStack&);
+        void setEvals(CStack&);
 
         // access next points solution
         //
@@ -103,27 +105,27 @@ class InnerConstraint{
 
         inline const double& getNextParamValue(Idx& idx);
 
-        void computeFinalStack(VStack&);
+        void computeFinalStack(Stack&);
 
-        void caseVAR_POINTER(VStack&);
+        void caseVAR_POINTER(Stack&);
 
-        void caseSQR_VAR(VStack&);
+        void caseSQR_VAR(Stack&);
 
-        void caseADD(VStack&);
+        void caseADD(Stack&);
 
-        void caseMUL(VStack&);
+        void caseMUL(Stack&);
 
-        void casePARAM_POINTER(VStack&);
+        void casePARAM_POINTER(Stack&);
 
-        void caseCONST(VStack&);
+        void caseCONST(Stack&);
 
-        void casePOW(VStack&);
+        void casePOW(Stack&);
 
-        void caseSIN(VStack&);
+        void caseSIN(Stack&);
 
-        void caseCOS(VStack&);
+        void caseCOS(Stack&);
 
-        void caseTAN(VStack&);
+        void caseTAN(Stack&);
 };
 }
 #endif

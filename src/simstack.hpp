@@ -17,6 +17,8 @@
 #define MADOPT_SIMSTACK
 
 #include "stack.hpp"
+#include "common.hpp"
+#include <vector>
 
 namespace MadOpt {
 

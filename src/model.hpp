@@ -18,7 +18,8 @@
 
 #include "common.hpp"
 
-#include "vstack.hpp"
+#include "cstack.hpp"
+#include "simstack.hpp"
 #include "var.hpp"
 #include "param.hpp"
 #include "constraint.hpp"
@@ -200,7 +201,8 @@ class Model {
 
         const string toString()const;
 
-        VStack& getStack(){ return stack; }
+        SimStack& getSimStack(){ return simstack; }
+        CStack& getCStack(){ return cstack; }
 
     protected:
         bool model_changed=false;
@@ -209,7 +211,8 @@ class Model {
     private:
         vector<InnerParam*> params;
         vector<InnerConstraint*> constraints;
-        VStack stack;
+        CStack cstack;
+        SimStack simstack;
         InnerConstraint* obj=nullptr;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;

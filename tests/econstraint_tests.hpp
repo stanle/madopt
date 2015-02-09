@@ -34,9 +34,12 @@ class EConstraintTest: public CxxTest::TestSuite {
             InnerConstraint e(exp);
             HessPosMap hess_pos_map;
             TestModel m;
-            auto& stack = m.getStack();
-            stack.setX(x.data(), x.size());
-            e.init(hess_pos_map, stack);
+            auto& simstack = m.getSimStack();
+            auto& cstack = m.getCStack();
+            simstack.setX(x.data(), x.size());
+            cstack.setX(x.data(), x.size());
+            e.init(hess_pos_map, simstack);
+            cstack.resize(simstack);
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)
@@ -48,7 +51,7 @@ class EConstraintTest: public CxxTest::TestSuite {
 
             const auto& ejace = e.getJacEntries();
 
-            e.setEvals(stack);
+            e.setEvals(cstack);
 
             map<int, double> ej;
             auto ejac = e.getJac();

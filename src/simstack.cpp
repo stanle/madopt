@@ -46,7 +46,16 @@ void SimStack::setX(const double* xx, const Idx& size){
 
 }
 
-void CStack::clear(){
+void SimStack::clear(){
 
 }
+
+vector<Idx> SimStack::getJacEntries(){
+    return vector<Idx>();
+}
+
+vector<PII> SimStack::getHessEntries(){
+    return vector<PII>();
+}
+
 }

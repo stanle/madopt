@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MADOPT_SIMSTACK
-#define MADOPT_SIMSTACK
+#ifndef MADOPT_CSTACK
+#define MADOPT_CSTACK
 
 #include "stack.hpp"
 
 namespace MadOpt {
+
+class SimStack;
 
 class CStack: public Stack {
     public:
@@ -32,6 +34,8 @@ class CStack: public Stack {
         void clear();
 
         void fill(double* jac, double* hess);
+
+        void resize(const SimStack& simstack);
 
     private:
         double dummy=0;
