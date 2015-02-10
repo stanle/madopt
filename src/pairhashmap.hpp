@@ -33,6 +33,8 @@ class PairHashMap {
         Idx& operator[](const HashPair&);
         void resize(const Idx& max_range);
 
+        string str()const;
+
     private:
         struct HashTuple {
             HashTuple(const HashPair& p, const Idx& value): p(p), value(value){}

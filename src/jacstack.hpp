@@ -35,7 +35,6 @@ class JacStack : public ListStack<Idx> {
 
     private:
         vector<Idx> last_pos_map;
-        vector<Idx> var_map;
 
         void clearLastStackPos();
 

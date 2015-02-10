@@ -31,15 +31,11 @@ class EConstraintTest: public CxxTest::TestSuite {
                 const vector<double> hess={}, 
                 const double delta=0.000001
                 ){
-            InnerConstraint e(exp);
             HessPosMap hess_pos_map;
             TestModel m;
             auto& simstack = m.getSimStack();
-            auto& cstack = m.getCStack();
-            simstack.setX(x.data(), x.size());
-            cstack.setX(x.data(), x.size());
-            e.init(hess_pos_map, simstack);
-            cstack.resize(simstack);
+            simstack.setXSize(x.size());
+            InnerConstraint e(exp, hess_pos_map, simstack);
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)
@@ -51,6 +47,9 @@ class EConstraintTest: public CxxTest::TestSuite {
 
             const auto& ejace = e.getJacEntries();
 
+            auto& cstack = m.getCStack();
+            cstack.resize(simstack);
+            cstack.setX(x.data());
             e.setEvals(cstack);
 
             map<int, double> ej;
@@ -115,8 +114,8 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             Var a = m.addVar("a");
             Var b = m.addVar("b");
-            Tes(2*a, {3}, 6, {0}, {2});
-            Tes(a*b, {2,3}, 2*3, {0,1}, {3,2}, {PII(0,1)}, {1});
+            //Tes(2*a, {3}, 6, {0}, {2});
+            //Tes(a*b, {2,3}, 2*3, {0,1}, {3,2}, {PII(0,1)}, {1});
             double ax = 3;
             double bx = 5;
             Tes(a*a*b, {ax,bx}, 

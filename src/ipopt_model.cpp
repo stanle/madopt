@@ -38,9 +38,6 @@ IpoptModel::~IpoptModel(){
 }
 
 void IpoptModel::solve(){
-    //if (model_changed)
-        init();
-
     if (not show_solver){
         setIntegerOption("print_level", 0);
         setStringOption("sb", "yes");

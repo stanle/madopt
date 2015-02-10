@@ -45,8 +45,6 @@ void profile(double a, int b){
 
     vector<double> xx(N, 0);
 
-    m.init();
-
     for (int i=0; i<b; i++){
         std::cout<<"run="<<i<<std::endl;
         m.setEvals(xx.data());

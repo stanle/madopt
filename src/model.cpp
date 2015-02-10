@@ -41,31 +41,6 @@ Model::~Model(){
     }
 }
 
-void Model::init(){
-    TRACE_START;
-    hess_pos_map.clear();
-
-    if (obj == nullptr)
-        throw MadOptError("no objective set");
-
-    vector<double> x(nx());
-    simstack.setX(x.data(), nx());
-
-    obj->init(hess_pos_map, simstack);
-    for (auto& constr: constraints){
-        constr->init(hess_pos_map, simstack);
-    }
-
-    simstack.clear();
-    cstack.resize(simstack);
-
-    obj_jac_map.clear();
-    obj_jac_map.resize(obj->getNNZ_Jac());
-    obj->getNZ_Jac(obj_jac_map.data());
-
-    TRACE_END;
-}
-
 // Var stuff
 // 
 //
@@ -122,7 +97,9 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
         if (&solution != &sol)
             throw MadOptError("cannot add variable from other model to this model");
     }
-    auto con = new InnerConstraint(expr, lb, ub);
+    simstack.setXSize(vars.size());
+    auto con = new InnerConstraint(expr, lb, ub, hess_pos_map, simstack);
+    cstack.resize(simstack);
     constraints.push_back(con);
     model_changed = true;
     return Constraint(this, constraints.size()-1);
@@ -143,15 +120,16 @@ Constraint Model::addConstr(const double lb, const Expr& expr){
 //Objective Stuff
 //
 //
-void Model::setObj(InnerConstraint* constraint){
+void Model::setObj(const Expr& expr){
+    simstack.setXSize(vars.size());
     model_changed = true;
     if (obj != nullptr)
         delete obj;
-    obj = constraint;
-}
-
-void Model::setObj(const Expr& expr){
-    setObj(new InnerConstraint(expr));
+    obj = new InnerConstraint(expr, hess_pos_map, simstack);
+    cstack.resize(simstack);
+    obj_jac_map.clear();
+    obj_jac_map.resize(obj->getNNZ_Jac());
+    obj->getNZ_Jac(obj_jac_map.data());
 }
 
 //NLP init stuff
@@ -240,7 +218,7 @@ Idx Model::np() const{
 // 
 
 void Model::setEvals(const double* x){
-    cstack.setX(x, nx());
+    cstack.setX(x);
     obj->setEvals(cstack);
     for (auto& constraint: constraints)
         constraint->setEvals(cstack);

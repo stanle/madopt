@@ -49,9 +49,6 @@ BonminModel::~BonminModel(){
 }
 
 void BonminModel::solve(){
-    if (model_changed)
-        init();
-
     if (timelimit >= 0)
         setNumericOption("bonmin.time_limit", timelimit);
 

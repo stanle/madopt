@@ -16,6 +16,7 @@
 #include "bonmin_minlp.hpp"
 #include "bonmin_model.hpp"
 #include "solution.hpp"
+#include "logger.hpp"
 
 using namespace MadOpt;
 
@@ -42,7 +43,7 @@ bool BonminUserClass::get_variables_types(Index n, Bonmin::TMINLP::VariableType*
         else if (vt == VarType::INTEGER)
             var_types[i] = Bonmin::TMINLP::VariableType::INTEGER;
         else
-            assert(false);
+            ASSERT(false);
     }
     return true;
   }
@@ -83,8 +84,10 @@ void BonminUserClass::finalize_solution(SolverReturn status, Index n, const Numb
 
 bool BonminUserClass::get_bounds_info(Index n, Number* x_l, Number* x_u,
                                Index m, Number* g_l, Number* g_u){
-    assert(n==solver->nx());
-    assert(m==solver->ng());
+    ASSERT(n >= 0); 
+    ASSERT(m >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
+    ASSERT((unsigned int)m==solver->ng());
     solver->getBounds(x_l, x_u, g_l, g_u);
     return true;
   }
@@ -93,26 +96,30 @@ bool BonminUserClass::get_starting_point(Index n, bool init_x, Number* x,
                                   bool init_z, Number* z_L, Number* z_U,
                                   Index m, bool init_lambda,
                                   Number* lambda){
-    assert(n==solver->nx());
+    ASSERT(n >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
     if (init_x)
         solver->getInits(x);
     return true;
   }
 
 bool BonminUserClass::eval_f(Index n, const Number* x, bool new_x, Number& obj_value){
-    assert(n==solver->nx());
+    ASSERT(n >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
     solver->eval_f(x, new_x, obj_value);
     return true;
 }
 
 bool BonminUserClass::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f){
-    assert(n==solver->nx());
+    ASSERT(n >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
     solver->eval_grad_f(x, new_x, grad_f);
     return true;
 }
 
 bool BonminUserClass::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g){
-    assert(n==solver->nx());
+    ASSERT(n >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
     solver->eval_g(x, new_x, g);
     return true;
 }
@@ -120,8 +127,10 @@ bool BonminUserClass::eval_g(Index n, const Number* x, bool new_x, Index m, Numb
 bool BonminUserClass::eval_jac_g(Index n, const Number* x, bool new_x,
                         Index m, Index nele_jac, Index* iRow, Index *jCol,
                         Number* values){
-    assert(n==solver->nx());
-    assert(m==solver->ng());
+    ASSERT(n >= 0); 
+    ASSERT(m >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
+    ASSERT((unsigned int)m==solver->ng());
     if (values == NULL){
         solver->getNZ_Jac(iRow, jCol);
     } else {
@@ -134,8 +143,10 @@ bool BonminUserClass::eval_h(Index n, const Number* x, bool new_x,
                     Number obj_factor, Index m, const Number* lambda,
                     bool new_lambda, Index nele_hess, Index* iRow,
                     Index* jCol, Number* values){
-    assert(n==solver->nx());
-    assert(m==solver->ng());
+    ASSERT(n >= 0); 
+    ASSERT(m >= 0); 
+    ASSERT((unsigned int)n==solver->nx());
+    ASSERT((unsigned int)m==solver->ng());
     if (values == NULL){
         solver->getNZ_Hess(iRow, jCol);
     } else {

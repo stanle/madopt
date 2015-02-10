@@ -54,7 +54,12 @@ const vector<Idx>& InnerConstraint::getHessMap()const{
     return hess_map;
 }
 
-InnerConstraint::InnerConstraint(const Expr& expr, const double _lb, const double _ub): 
+InnerConstraint::InnerConstraint(
+        const Expr& expr,
+        const double _lb,
+        const double _ub,
+        HessPosMap& hess_pos_map,
+        SimStack& stack): 
     _lb(_lb), 
     _ub(_ub)
 {
@@ -79,10 +84,33 @@ InnerConstraint::InnerConstraint(const Expr& expr, const double _lb, const doubl
                     "unknown type", type);
         }
     }
+
+    stack.clear();
+    stack.setConflicts(&conflicts);
+    ASSERT_EQ(stack.size(), 0);
+    computeFinalStack(stack);
+    ASSERT_EQ(stack.size(), 1);
+    vector<PII> hess_entries = stack.getHessEntries();
+    for (auto& p : hess_entries){
+        auto it = hess_pos_map.find(p);
+        if (it == hess_pos_map.end())
+            hess_pos_map[p] = hess_pos_map.size() - 1;
+        hess_map.push_back(hess_pos_map[p]);
+    }
+    hess.resize(hess_map.size());
+    ASSERT_EQ(hess.size(), hess_entries.size());
+    jac_entries = stack.getJacEntries();
+    ASSERT_IF(operators.back() != OP_CONST, jac_entries.size() > 0);
+    jac.resize(jac_entries.size());
+    ASSERT_IF(operators.back() != OP_CONST, jac.data() != nullptr);
+    TRACE("conf elems", conflicts.str());
 }
 
-InnerConstraint::InnerConstraint(const Expr& expr): 
-    InnerConstraint(expr, 0, 0){}
+InnerConstraint::InnerConstraint(
+        const Expr& expr, 
+        HessPosMap& hess_pos_map,
+        SimStack& stack): 
+    InnerConstraint(expr, 0, 0, hess_pos_map, stack){}
 
 double InnerConstraint::lb(){
     return _lb; 
@@ -105,28 +133,6 @@ Idx InnerConstraint::getNNZ_Jac(){
     return jac.size(); 
 }
 
-void InnerConstraint::init(HessPosMap& hess_pos_map, SimStack& stack){
-    TRACE_START;
-    stack.clear();
-    ASSERT_EQ(stack.size(), 0);
-    computeFinalStack(stack);
-    ASSERT_EQ(stack.size(), 1);
-
-    hess_map.clear();
-    vector<PII> hess_entries = stack.getHessEntries();
-    for (auto& p : hess_entries){
-        auto it = hess_pos_map.find(p);
-        if (it == hess_pos_map.end())
-            hess_pos_map[p] = hess_pos_map.size() - 1;
-        hess_map.push_back(hess_pos_map[p]);
-    }
-    hess.resize(hess_map.size());
-
-    jac_entries = stack.getJacEntries();
-    jac.resize(jac_entries.size());
-    TRACE_END;
-}
-
 const vector<Idx>& InnerConstraint::getJacEntries(){ 
     return jac_entries;
 }
@@ -140,37 +146,40 @@ void InnerConstraint::getNZ_Jac(unsigned int* jCol){
 void InnerConstraint::setEvals(CStack& stack){
     TRACE_START;
     stack.clear();
-
-    ASSERT(stack.size() == 0);
+    stack.setConflicts(&conflicts);
+    ASSERT_EQ(stack.size(), 0);
     computeFinalStack(stack);
-    ASSERT(stack.size() == 1);
-
-    g = stack.lastG();
+    ASSERT_EQ(stack.size(), 1);
+    ASSERT_IF(operators.back() != OP_CONST, jac.data() != nullptr);
+    stack.fill(g, jac.data(), hess.data());
     VALGRIND_CONDITIONAL_JUMP_TEST(g);
-
-    stack.fill(jac.data(), hess.data());
     TRACE_END;
 }
 
 const double& InnerConstraint::getNextValue(Idx& idx){
+    ASSERT_LE(idx, data.size()-1);
     return reinterpret_cast<const double&>(data[idx++]);
 }
 
 Idx InnerConstraint::getNextCounter(Idx& idx){
+    ASSERT_LE(idx, data.size()-1);
     return data[idx++];
 }
 
 const Idx& InnerConstraint::getNextPos(Idx& idx){
+    ASSERT_LE(idx, data.size()-1);
     return (reinterpret_cast<InnerVar*>(data[idx++]))->getPos();
 }
 
 const double& InnerConstraint::getNextParamValue(Idx& idx){
+    ASSERT_LE(idx, data.size()-1);
     return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
 }
 
 #define MADOPTCASE(a) case OP_##a: case##a(stack); break;
 void InnerConstraint::computeFinalStack(Stack& stack){
     TRACE_START;
+    ASSERT_EQ(stack.getDataI(), 0);
     for (auto& op: operators){
         switch(op){
             MADOPTCASE(VAR_POINTER)
@@ -192,14 +201,14 @@ void InnerConstraint::computeFinalStack(Stack& stack){
 
 void InnerConstraint::caseADD(Stack& stack){
     TRACE_START;
-    const auto& size = getNextCounter(stack.data_i);
+    const auto& size = getNextCounter(stack.getDataI());
     stack.doAdd(size);
     TRACE_END;
 }
 
 void InnerConstraint::caseMUL(Stack& stack){
    TRACE_START;
-   const auto& size = getNextCounter(stack.data_i);
+   const auto& size = getNextCounter(stack.getDataI());
    for (Idx i=0; i<size-1; i++){
        stack.doMull();
    }
@@ -208,26 +217,26 @@ void InnerConstraint::caseMUL(Stack& stack){
 
 void InnerConstraint::caseVAR_POINTER(Stack& stack){
    TRACE_START;
-    const auto& pos = getNextPos(stack.data_i);
+    const auto& pos = getNextPos(stack.getDataI());
     stack.emplace_back(pos);
    TRACE_END;
 }
 
 void InnerConstraint::casePARAM_POINTER(Stack& stack){
     TRACE_START;
-    stack.emplace_back(getNextParamValue(stack.data_i));
+    stack.emplace_back(getNextParamValue(stack.getDataI()));
     TRACE_END;
 }
 
 void InnerConstraint::caseCONST(Stack& stack){
    TRACE_START;
-    stack.emplace_back(getNextValue(stack.data_i));
+    stack.emplace_back(getNextValue(stack.getDataI()));
    TRACE_END;
 }
 
 void InnerConstraint::casePOW(Stack& stack){
    TRACE_START;
-    double value = getNextValue(stack.data_i);
+    double value = getNextValue(stack.getDataI());
     double& g = stack.lastG();
     double pow_hess(1);
     if (value != 2)

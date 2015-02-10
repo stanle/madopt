@@ -24,7 +24,7 @@ namespace MadOpt {
  
 //#define ENABLE_TRACING
 //#define ENABLE_VALGRIND_DEBUGGING
-//#define ENABLE_ASSERTS
+#define ENABLE_ASSERTS
 
 template<typename TF>
 void write_debug_output( std::ostream & out, TF const& f ) {
@@ -151,6 +151,26 @@ struct tracer {
         }\
     } while(0)
 
+#define ASSERT_IF(a,b,...) do { \
+        if (!(a) || (b)) {} else {\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT("NOT IF ", #a, " THEN ", #b);\
+            PRINT_STUFF_OUT(a, " THEN ", b);\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+        }\
+    } while(0)
+
+#define ASSERT_XOR(a,b,...) do { \
+        if (((a) && (b)) || (!(a) && !(b))) {} else {\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT(#a, " XOR " #b);\
+            PRINT_STUFF_OUT(a, " XOR ", b);\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+        }\
+    } while(0)
+
 #define DEBUG_CODE(a) a
 
 #else
@@ -159,6 +179,8 @@ struct tracer {
 #define ASSERT_EQ(...)
 #define ASSERT_LE(...)
 #define ASSERT_UEQ(...)
+#define ASSERT_IF(...)
+#define ASSERT_XOR(...)
 #define ASSERT_BETWEEN(...)
 #define DEBUG_CODE(a)
 #endif

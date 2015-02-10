@@ -51,8 +51,6 @@ class Model {
         //simply passes the options to the solver
         virtual void setIntegerOption(std::string key, int value){}
 
-        // init
-        void init();
         // Var stuff
         
         //! \sa addVar(double, double, double, string)

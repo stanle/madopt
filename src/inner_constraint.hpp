@@ -19,6 +19,7 @@
 #include <set>
 #include <vector>
 #include "common.hpp"
+#include "array.hpp"
 
 namespace MadOpt {
 
@@ -31,9 +32,10 @@ class SimStack;
 
 class InnerConstraint{
     public:
-        InnerConstraint(const Expr& expr, const double _lb, const double _ub);
+        InnerConstraint(const Expr& expr, const double _lb, const double _ub,
+                HessPosMap& hess_pos_map, SimStack& stack);
 
-        InnerConstraint(const Expr& expr);
+        InnerConstraint(const Expr& expr, HessPosMap& hess_pos_map, SimStack& stack);
 
         // bounds
         //
@@ -52,8 +54,6 @@ class InnerConstraint{
         Idx getNNZ_Jac();
 
         void getNZ_Jac(unsigned int* jCol);
-
-        void init(HessPosMap& hess_pos_map, SimStack&);
 
         // compute next point
         //
@@ -96,6 +96,8 @@ class InnerConstraint{
         double _lb;
 
         double _ub;
+
+        Array<Idx> conflicts;
 
         inline const double& getNextValue(Idx& idx); 
 

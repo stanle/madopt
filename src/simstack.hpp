@@ -18,6 +18,8 @@
 
 #include "stack.hpp"
 #include "common.hpp"
+#include "jac_simstack.hpp"
+#include "hess_simstack.hpp"
 #include <vector>
 
 namespace MadOpt {
@@ -30,14 +32,32 @@ class SimStack: public Stack {
         void doUnaryOp(const double& jac_value, const double& hess_value);
         void emplace_back(const Idx& id);
         void emplace_back(const double& value);
-        void setX(const double* xx, const Idx& size);
         void clear();
+
+        void setXSize(const Idx&);
+
+        Idx size();
+
+        const Idx& max_g_size()const;
+        const Idx& max_jac_size()const;
+        const Idx& max_hess_size()const;
 
         vector<Idx> getJacEntries();
         vector<PII> getHessEntries();
 
+        void setConflicts(Array<Idx>* c);
+
+        Idx& getDataI();
+
     private:
         double dummy=0;
+        JacSimStack jac_stack;
+        HessSimStack hess_stack;
+        Idx _size=0;
+        Idx _max_size=0;
+        Idx data_i=0;
+
+        string str();
 };
 }
 #endif

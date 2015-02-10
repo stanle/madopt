@@ -17,6 +17,8 @@
 #define MADOPT_CSTACK
 
 #include "stack.hpp"
+#include "array.hpp"
+#include "list_cstack.hpp"
 
 namespace MadOpt {
 
@@ -30,15 +32,26 @@ class CStack: public Stack {
         void doUnaryOp(const double& jac_value, const double& hess_value);
         void emplace_back(const Idx& id);
         void emplace_back(const double& value);
-        void setX(const double* xx, const Idx& size);
         void clear();
+        Idx size();
 
-        void fill(double* jac, double* hess);
+        void setConflicts(Array<Idx>* conflicts);
+
+        void fill(double& g, double* jac, double* hess);
 
         void resize(const SimStack& simstack);
 
+        void setX(const double* xx);
+
+        Idx& getDataI();
+
     private:
-        double dummy=0;
+        Array<double> g_stack;
+        ListCStack jac_stack;
+        ListCStack hess_stack;
+        Array<Idx>* conflicts;
+        const double* x;
+        Idx data_i=0;
 };
 }
 #endif

@@ -41,4 +41,12 @@ void PairHashMap::resize(const Idx& max_range){
     mapping.resize(2*max_range);
 }
 
+string PairHashMap::str()const{
+    string res;
+    for (auto& bucket: mapping)
+        for (auto& elem: bucket)
+            res += to_string(elem.p) + ":" + to_string(elem.value) + " ";
+    return res;
+}
+
 }

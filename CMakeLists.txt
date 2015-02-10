@@ -46,8 +46,6 @@ add_library(madopt STATIC
     ${SRC_DIR}/var.cpp
     ${SRC_DIR}/cstack.cpp
     ${SRC_DIR}/simstack.cpp
-    ${SRC_DIR}/jacstack.cpp
-    ${SRC_DIR}/hessstack.cpp
     ${SRC_DIR}/pairhashmap.cpp
 	)
 

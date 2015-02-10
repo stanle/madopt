@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MADOPT_STACK
-#define MADOPT_STACK
 
+#ifndef MADOPT_JACCSTACK
+#define MADOPT_JACCSTACK
+
+#include "list_cstack.hpp"
 #include "common.hpp"
 
 namespace MadOpt {
 
-class Stack {
-    public:
-        virtual ~Stack(){}
+class JacCStack : public ListCStack<Idx> {
 
-        virtual void doAdd(const Idx& nofelems)=0;
-        virtual void doMull()=0; 
-        virtual double& lastG()=0;
-        virtual void doUnaryOp(const double& jac_value, const double& hess_value)=0;
-        virtual void emplace_back(const Idx& id)=0;
-        virtual void emplace_back(const double& value)=0;
-        virtual Idx size()=0;
-        virtual void clear()=0;
-        virtual Idx& getDataI()=0;
 };
 }
 #endif
+
 

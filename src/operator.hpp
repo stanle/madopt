@@ -125,8 +125,8 @@ class Operator{
         }
 
     private:
-        uintptr_t value;
         OPType type;
+        uintptr_t value;
 
         void checkNone()const {
             if (type != OP_SIN && type != OP_COS && type != OP_TAN)
