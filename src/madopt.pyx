@@ -316,7 +316,7 @@ cdef class Model:
     def addParam(self, double v, name=None):
         name = name or ('p' + str(self.model_.np()))
         e = Param()
-        e.expr_ = self.model_.addParam(v, name)
+        e.expr_ = self.model_.addParam(v, name.encode('UTF-8'))
         return e
 
     # set Objective
