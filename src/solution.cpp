@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <cmath>
 #include "solution.hpp"
 #include "exceptions.hpp"
 //#include "common.hpp"
@@ -60,6 +61,13 @@ Idx Solution::ng()const {
 double Solution::x(const Idx idx)const { 
     if (!hasSolution())
         throw MadOptError("trying to access solution but non is loaded");
+    assert(_x.size() > idx);
+    return _x[idx]; 
+}
+
+double Solution::v(const Idx idx)const { 
+    if (!hasSolution())
+        return std::nan("");
     assert(_x.size() > idx);
     return _x[idx]; 
 }

@@ -20,30 +20,33 @@
 
 namespace MadOpt {
 
+class Model;
+
 //! constraint class to access/change constraint bounds and access dual/lambda
 //solution values, can only be constructed via Model::addConstr()
 class Constraint {
     public: 
         Constraint(){} // for python interface
-        Constraint(InnerConstraint* icon): icon(icon){}
+        Constraint(Model* model, Idx pos): model(model), pos(pos){}
 
         //! get the lower bound
-        double lb(){ return icon->lb(); };
+        double lb();
 
         //! set the lower bound
-        void lb(double v){ icon->lb(v); }
+        void lb(double v);
 
         //! get the upper bound
-        double ub(){ return icon->ub(); };
+        double ub();
 
         //! set the upper bound
-        void ub(double v){ icon->ub(v); }
+        void ub(double v);
 
         //! get the lambda value of the current solution, only available
-        double lam()const { return icon->lam();}
+        double lam()const; 
 
     private:
-        InnerConstraint* icon;
+        Model* model;
+        Idx pos;
 };
 
 }

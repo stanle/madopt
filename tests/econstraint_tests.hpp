@@ -15,9 +15,7 @@
  */
 #include <cxxtest/TestSuite.h>
 #include "testmodel.hpp"
-#include "../src/econstraint.hpp"
-#include "tutorial_obj_term.hpp"
-#include "tutorial_constraint.hpp"
+#include "../src/inner_constraint.hpp"
 
 using namespace MadOpt;
 
@@ -33,10 +31,11 @@ class EConstraintTest: public CxxTest::TestSuite {
                 const vector<double> hess={}, 
                 const double delta=0.000001
                 ){
-            ADStack stack;
-            EConstraint e(exp, stack);
             HessPosMap hess_pos_map;
-            e.init(hess_pos_map);
+            TestModel m;
+            auto& simstack = m.getSimStack();
+            simstack.setXSize(x.size());
+            InnerConstraint e(exp, hess_pos_map, simstack);
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)
@@ -46,9 +45,12 @@ class EConstraintTest: public CxxTest::TestSuite {
             for (Idx i=0; i<hess_entries.size(); i++)
                 hessvm[hess_entries[i]] = hess[i];
 
-            auto ejace = e.getJacEntries();
+            const auto& ejace = e.getJacEntries();
 
-            e.setEvals(x.data());
+            auto& cstack = m.getCStack();
+            cstack.resize(simstack);
+            cstack.setX(x.data());
+            e.setEvals(cstack);
 
             map<int, double> ej;
             auto ejac = e.getJac();
@@ -103,15 +105,17 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             Var a = m.addVar("a");
             Var b = m.addVar("b");
+            Var c = m.addVar("c");
             Tes(a+b, {2, 3}, 2+3, {0, 1}, {1,1});
+            Tes(a+b+c, {2, 3, 4}, 2+3+4, {0, 1, 2}, {1,1,1});
         }
 
         void testMUL(){
             TestModel m;
             Var a = m.addVar("a");
             Var b = m.addVar("b");
-            Tes(2*a, {3}, 6, {0}, {2});
-            Tes(a*b, {2,3}, 2*3, {0,1}, {3,2}, {PII(0,1)}, {1});
+            //Tes(2*a, {3}, 6, {0}, {2});
+            //Tes(a*b, {2,3}, 2*3, {0,1}, {3,2}, {PII(0,1)}, {1});
             double ax = 3;
             double bx = 5;
             Tes(a*a*b, {ax,bx}, 
@@ -124,6 +128,22 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             Var a = m.addVar("a");
             Tes(cos(2*a), {3}, cos(2*3), {0}, {-2*sin(6)}, {PII(0,0)}, {-4*cos(6)});
+        }
+
+        void testCOS2(){
+            TestModel m;
+            Var a = m.addVar("a");
+            Var b = m.addVar("b");
+            Tes(cos(a*b), {3, 2}, cos(2*3), 
+                    {0, 1}, {-2*sin(6), -3*sin(6)},
+                    {PII(0,0), PII(0,1), PII(1,1)}, 
+                    {-4*cos(6), -sin(6)-6*cos(6), -9*cos(6)});
+        }
+
+        void testSIN(){
+            TestModel m;
+            Var a = m.addVar("a");
+            Tes(sin(2*a), {3}, sin(2*3), {0}, {2*cos(6)}, {PII(0,0)}, {-4*sin(6)});
         }
 
         void testPOW(){
@@ -177,49 +197,6 @@ class EConstraintTest: public CxxTest::TestSuite {
                 {0,1,2}, {(2*ax+1.5)*cos(bx), -(pow(ax,2)+1.5*ax-v)*sin(bx), -1},
                 {PII(0,0), PII(0,1), PII(1,1)},
                 {cos(bx)*2, -sin(bx)*(2*ax+1.5), -(pow(ax,2)+1.5*ax-v)*cos(bx)});
-        }
-
-        void testTutorial(){
-            int N = 100;
-            int nah = N-1 + N-2;
-            TestModel m;
-            vector<Var> x(N);
-            vector<double> x_buffer(N);
-            for (int i=0; i<N; i++){
-                x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-                x_buffer[i] = i;
-            }
-            HessPosMap hess_pos_map;
-            for (int i=0; i<N-2; i++){
-                double a = double(i+2)/(double)N;
-                TutorialConstraint t(i, a);
-                t.init(hess_pos_map);
-                t.setEvals(x_buffer.data());
-                Tes((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i],
-                        x_buffer, t.getG(), 
-                        t.getJacEntries(), t.getJac(),
-                        t.getHessEntries(), t.getHess(), 0.00001);
-            }
-        }
-
-        void testSumObj(){
-            int N = 100;
-            TestModel m;
-            vector<Var> x(N);
-            Expr obj(0);
-            vector<double> x_data(x.size());
-            for (int i=0; i<N; i++){
-                x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
-                obj += pow(x[i] - 1, 2);
-                x_data[i] = i;
-            }
-            TutorialObjTerm t(N, 0);
-            HessPosMap hess_pos_map;
-            t.init(hess_pos_map);
-            t.setEvals(x_data.data());
-
-            Tes(obj, x_data, t.getG(), t.getJacEntries(), t.getJac(), 
-                    t.getHessEntries(), vector<double>(N,2), 0);
         }
 
         void testCaseADD(){

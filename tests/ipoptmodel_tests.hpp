@@ -71,10 +71,13 @@ class IpoptModelTest: public CxxTest::TestSuite {
             m.solve();
 
             TS_ASSERT_EQUALS(m.status(), 0);
-            TS_ASSERT_EQUALS(m.objValue(), 3013.9151946976763);
+            TS_ASSERT_EQUALS(m.objValue(),  3013.9151946976758154050912708);
             TS_ASSERT_EQUALS(x[0].x(), -0.413735377524265646176360178288);
             TS_ASSERT_EQUALS(x[1].x(), -0.415322942791292726294472004156);
             TS_ASSERT_EQUALS(x[2].x(), -0.416896632962390045751277511954);
+            //cout.precision(30);
+            //std::cout<<m.objValue()<<std::endl;
+            //std::cout<<x[0].x()<<std::endl;
         }
 
         void testResolve(){

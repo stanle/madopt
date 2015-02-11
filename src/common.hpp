@@ -71,6 +71,9 @@ typedef vector<double> ParamData;
 
 string to_string(PII p);
 string to_string(Idx p);
+string to_string(vector<Idx> v);
+string to_string(vector<PII> v);
+string to_string(vector<double> v);
 
 
 }

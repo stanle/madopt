@@ -22,7 +22,6 @@
 #include "param.hpp"
 #include "inner_constraint.hpp"
 #include "constraint.hpp"
-#include "econstraint.hpp"
 #include "logger.hpp"
 
 using namespace MadOpt;
@@ -42,40 +41,15 @@ Model::~Model(){
     }
 }
 
-void Model::init(){
-    TRACE_START;
-    if (show_solver)
-        cout<<"Starting Init"<<endl;
-
-    hess_pos_map.clear();
-
-    if (obj == nullptr)
-        throw MadOptError("no objective set");
-
-    obj->init(hess_pos_map);
-    for (auto& constr: constraints){
-        constr->init(hess_pos_map);
-    }
-
-    stack.clear();
-
-    stack.optimizeAlignment();
-
-    obj_jac_map.clear();
-    obj_jac_map.resize(obj->getNNZ_Jac());
-    obj->getNZ_Jac(obj_jac_map.data());
-    //obj_jac_map = obj->getJacEntries();
-
-    if (show_solver)
-        cout<<"init end"<<endl;
-    TRACE_END;
-}
-
 // Var stuff
 // 
 //
 Var Model::addVar(string name){
     return addCVar(-INF, INF, 0, name);
+}
+
+Var Model::addVar(double init, string name){
+    return addCVar(-INF, INF, init, name);
 }
 
 Var Model::addVar(double lb, double ub, double init, string name){
@@ -111,15 +85,8 @@ Var Model::addBVar(double init, string name){
 //Constraint stuff
 //
 //
-Constraint Model::addConstr(InnerConstraint* con){
-    con->setPos(constraints.size());
-    con->setSolutionClass(&solution);
-    constraints.push_back(con);
-    model_changed = true;
-    return Constraint(con);
-}
-
 Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
+    TRACE_START;
     if (lb > ub)
         throw MadOptError("lower bound is greater then upper bound for expr=" 
                 + expr.toString() 
@@ -129,9 +96,16 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
     for (auto& var: vars){
         const Solution& sol = var->getSolution();
         if (&solution != &sol)
-            throw MadOptError("added variable from other model to wrong model");
+            throw MadOptError("cannot add variable from other model to this model");
     }
-    return addConstr(new EConstraint(expr, lb, ub, stack));
+    TRACE(expr.toString());
+    simstack.setXSize(nx());
+    auto con = new InnerConstraint(expr, lb, ub, hess_pos_map, simstack);
+    cstack.resize(simstack);
+    constraints.push_back(con);
+    model_changed = true;
+    TRACE_END;
+    return Constraint(this, constraints.size()-1);
 }
 
 Constraint Model::addEqConstr(const Expr& expr, const double equal){
@@ -149,15 +123,16 @@ Constraint Model::addConstr(const double lb, const Expr& expr){
 //Objective Stuff
 //
 //
-void Model::setObj(InnerConstraint* constraint){
+void Model::setObj(const Expr& expr){
     model_changed = true;
     if (obj != nullptr)
         delete obj;
-    obj = constraint;
-}
-
-void Model::setObj(const Expr& expr){
-    setObj(new EConstraint(expr, stack));
+    simstack.setXSize(nx());
+    obj = new InnerConstraint(expr, hess_pos_map, simstack);
+    cstack.resize(simstack);
+    obj_jac_map.clear();
+    obj_jac_map.resize(obj->getNNZ_Jac());
+    obj->getNZ_Jac(obj_jac_map.data());
 }
 
 //NLP init stuff
@@ -244,10 +219,12 @@ Idx Model::np() const{
 // Eval functions
 // 
 // 
+
 void Model::setEvals(const double* x){
-    obj->setEvals(x);
+    cstack.setX(x);
+    obj->setEvals(cstack);
     for (auto& constraint: constraints)
-        constraint->setEvals(x);
+        constraint->setEvals(cstack);
 }
 
 void Model::eval_f(const double* x, bool new_x, double& obj_value){
@@ -307,16 +284,20 @@ Solution::SolverStatus Model::status()const {
 }
 
 Var Model::addVar(double lb, double ub, VarType type, double init, string name){
+    TRACE_START;
     InnerVar* v = new InnerVar(lb, ub, init, type, name, solution);
     v->setPos(vars.size());
     vars.push_back(v);
     model_changed = true;
+    TRACE_END;
     return Var(v);
 }
 
 Param Model::addParam(const double value, const string name){
+    TRACE_START;
     InnerParam* p = new InnerParam(value, name);
     params.push_back(p);
+    TRACE_END;
     return Param(p);
 }
 
@@ -335,4 +316,26 @@ const string Model::toString()const {
     return res;
 
 }
+
+double Model::lb(Idx idx)const {
+    ASSERT_LE(idx, constraints.size()-1);
+    return constraints[idx]->lb();
+}
+
+void Model::lb(Idx idx, double v){
+    ASSERT_LE(idx, constraints.size()-1);
+    constraints[idx]->lb(v);
+}
+
+double Model::ub(Idx idx)const {
+    ASSERT_LE(idx, constraints.size()-1);
+    return constraints[idx]->ub();
+}
+
+void Model::ub(Idx idx, double v){
+    ASSERT_LE(idx, constraints.size()-1);
+    constraints[idx]->ub(v);
+}
+
+
 /* ex: set tabstop=4 shiftwidth=4 expandtab: */

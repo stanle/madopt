@@ -18,28 +18,57 @@
 #include "../src/bonmin_model.hpp"
 #include <unistd.h>
 #include <cmath>
-
+#include <math.h>
 #include <vector>
 
 using namespace MadOpt;
 
 void playground(double a, int b){
-    double x = std::pow(-1, 0.5);
-    std::cout<<x<<std::endl;
+    vector<double> x(b);
+
+    //for (size_t i=0; i<x.size(); i++)
+    for (size_t i=x.size()-1; i!=0; i--)
+        x[i] = 2*i;
+
+    std::cout<<"END"<<std::endl;
 }
 
-void test(double d, int i){
+void profile(double a, int b){
+    int N = std::pow(10, a);
+
+    IpoptModel m;
+    Expr obj(0);
+    vector<Var> x(N);
+    for (int i=0; i<N; i++){
+        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        obj += pow(x[i] - 1, 2);
+    }
+    m.setObj(obj);
+
+    for (int i=0; i<N-2; i++){
+        double a = double(i+2)/(double)N;
+        m.addEqConstr((pow(x[i+1], 2) + 1.5*x[i+1] - a)*cos(x[i+2]) - x[i], 0);
+    }
+
+    vector<double> xx(N, 0);
+
+    for (int i=0; i<b; i++){
+        std::cout<<"run="<<i<<std::endl;
+        m.setEvals(xx.data());
+    }
+}
+
+void test(double d, int n){
     IpoptModel m;
     m.show_solver = true;
-    Var y = m.addVar(-INF, INF, 5, "x");
-    Var x1 = m.addVar(-INF, INF, "x1");
-
-    m.addEqConstr(y - x1, 0);
-    m.addEqConstr(y*y - x1, 0);
-
-    m.setObj(Expr(0));
-    std::cout<<m.toString()<<std::endl;
-    //m.solve();
+    Expr obj(1);
+    for (int i=0; i<n; i++){
+        Var x = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        obj *= x;
+        m.addConstr(-INF, x, 0);
+    }
+    m.setObj(obj);
+    m.solve();
 }
 
 void constructModel(const int N, IpoptModel& m, vector<Var>& x){
@@ -71,10 +100,10 @@ void tutorial(double p, int i){
 
     m.solve();
 
-    cout<<m.objValue()<<endl;
     cout<<m.status()<<endl;
     cout<<(m.status()==Solution::SolverStatus::SUCCESS)<< endl;
     cout.precision(30);
+    cout<<m.objValue()<<endl;
     cout<<x[0].x()<<endl;
     cout<<x[1].x()<<endl;
     cout<<x[2].x()<<endl;
@@ -98,7 +127,7 @@ int main(int argc, char* argv[]){
         }
 
     vector<function<void(double, int)> > funcs 
-        = {tutorial, test, playground};
+        = {tutorial, profile, test, playground};
 
     if (func < funcs.size())
         funcs[func](d, n);

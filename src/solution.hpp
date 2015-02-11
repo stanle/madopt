@@ -65,6 +65,8 @@ class Solution{
 
         double x(const Idx idx)const ;
 
+        double v(const Idx idx)const ;
+
         double lam(const Idx idx)const ;
 
         //! solver status

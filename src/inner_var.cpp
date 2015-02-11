@@ -89,6 +89,10 @@ double InnerVar::x()const {
     return sol.x(pos); 
 }
 
+double InnerVar::v()const {
+    return sol.v(pos); 
+}
+
 void InnerVar::solAsInit(){
     xi = x(); 
 }
@@ -126,7 +130,7 @@ const string InnerVar::toString()const {
         + "<" + ubstr;
 }
 
-inline void InnerVar::checkBounds(){
+void InnerVar::checkBounds(){
     if (_lb > _ub)
         throw MadOptError("lb larger than ub for variable " + _name);
     if (_lb > xi || _ub < xi)

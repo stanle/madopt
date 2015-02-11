@@ -54,6 +54,11 @@ double Var::x()const {
     return getIVar()->x(); 
 }
 
+//! get solution value if one is loaded, otherwise returns nan
+double Var::v()const {
+    return getIVar()->v(); 
+}
+
 //! get init value
 double Var::init(){
     return getIVar()->init(); 

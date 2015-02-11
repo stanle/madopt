@@ -25,7 +25,7 @@ namespace MadOpt {
             ipopt_callback = new IpoptUserClass(model);
         }
         IpoptApplication Iapp;
-        Ipopt::SmartPtr<IpoptUserClass> ipopt_callback;
+        Ipopt::SmartPtr<Ipopt::TNLP> ipopt_callback;
     };
 }
 
@@ -38,9 +38,6 @@ IpoptModel::~IpoptModel(){
 }
 
 void IpoptModel::solve(){
-    //if (model_changed)
-        init();
-
     if (not show_solver){
         setIntegerOption("print_level", 0);
         setStringOption("sb", "yes");
@@ -48,9 +45,6 @@ void IpoptModel::solve(){
 
     if (timelimit >= 0)
         setNumericOption("max_cpu_time", timelimit);
-
-    if (show_solver)
-        std::cout<<"Start Ipopt Application"<<std::endl;
 
     if (model_changed)
         impl->Iapp.OptimizeTNLP(impl->ipopt_callback);

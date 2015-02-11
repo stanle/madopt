@@ -47,6 +47,9 @@ class Var: public Expr{
         //! get solution value
         double x()const ;
 
+        //! get solution value if one is loaded, otherwise returns nan
+        double v()const ;
+
         //! get init value
         double init();
 

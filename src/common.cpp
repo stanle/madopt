@@ -30,4 +30,25 @@ std::string MadOpt::to_string(PII p){
 std::string MadOpt::to_string(Idx p){
     return std::to_string(p);
 }
+
+std::string MadOpt::to_string(vector<Idx> v){
+    std::string res;
+    for (auto& elem: v)
+        res += to_string(elem) + " ";
+    return res;
+}
+
+std::string MadOpt::to_string(vector<PII> v){
+    std::string res;
+    for (auto& elem: v)
+        res += to_string(elem) + " ";
+    return res;
+}
+
+std::string MadOpt::to_string(vector<double> v){
+    std::string res;
+    for (auto& elem: v)
+        res += to_string(elem) + " ";
+    return res;
+}
 /* ex: set tabstop=4 shiftwidth=4 expandtab: */

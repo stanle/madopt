@@ -79,10 +79,14 @@ bool IpoptUserClass::get_starting_point(Index n, bool init_x, Number* x,
     if (init_x)
         solver->getInits(x);
         VALGRIND_CONDITIONAL_JUMP_TEST_LOOP(n, x);
-    if (init_z)
+    if (init_z){
+        std::cout<<"no dual init implemented"<<std::endl;
         throw MadOptError("no dual init implemented");
-    if (init_lambda)
+    }
+    if (init_lambda){
+        std::cout<<"no lambda init implemented"<<std::endl;
         throw MadOptError("no lambda init implemented");
+    }
     TRACE_END;
     return true;
 }

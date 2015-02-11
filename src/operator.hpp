@@ -21,19 +21,19 @@
 #include "inner_param.hpp"
 #include "exceptions.hpp"
 
-#define OP_ADD 0
+#define OP_VAR_POINTER 0
 #define OP_CONST 1
-#define OP_VAR_POINTER 2
+#define OP_ADD 2
 #define OP_MUL 3
-#define OP_SIN 4
-#define OP_COS 5
-#define OP_POW 6
-#define OP_ADD_CONST 7
-#define OP_MUL_CONST 8
-#define OP_SQR_VAR 9
-#define OP_VAR_IDX 10
-#define OP_PARAM_POINTER 11
-#define OP_TAN 12
+#define OP_POW 4
+#define OP_PARAM_POINTER 5
+#define OP_SIN 6
+#define OP_COS 7
+#define OP_TAN 8
+
+#define OP_VAR_IDX 20
+#define OP_MUL_CONST 21
+#define OP_ADD_CONST 22
 
 namespace MadOpt {
 
@@ -125,8 +125,8 @@ class Operator{
         }
 
     private:
-        uintptr_t value;
         OPType type;
+        uintptr_t value;
 
         void checkNone()const {
             if (type != OP_SIN && type != OP_COS && type != OP_TAN)
@@ -152,7 +152,7 @@ class Operator{
         }
 
         void checkVarPointer()const {
-            if (type != OP_VAR_POINTER && type != OP_SQR_VAR)
+            if (type != OP_VAR_POINTER)
                 throw MadOptError("wrong use of Expression type");
         }
 

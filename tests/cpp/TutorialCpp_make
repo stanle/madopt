@@ -1,0 +1,5 @@
+#/bin/bash
+
+g++ TutorialCpp_main.cpp -lipopt -lcoinhsl -ldl -lpthread -lblas -llapack -lcoinmetis -lcoinmumps -lz -lbz2 -g -O2
+#g++ TutorialCpp_main.cpp -I/usr/include/casadi/ -lipopt -lcasadi -lcoinhsl -ldl -lpthread -lblas -llapack -lcoinmetis -lcoinmumps -lz -lbz2 -g -O2
+

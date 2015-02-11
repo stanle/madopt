@@ -11,7 +11,7 @@ set(CXX_FLAGS_COM "-std=c++11")
 # cmake automatically sets some flags based on compiler for debug and release
 # Can select which we want with -DCMAKE_BUILD_TYPE=release
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} -Wall -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_PROFILE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_PROFILE} -g -pg")
 
@@ -37,15 +37,16 @@ include_directories(
 
 add_library(madopt STATIC
     ${SRC_DIR}/model.cpp
+    ${SRC_DIR}/constraint.cpp
     ${SRC_DIR}/common.cpp
     ${SRC_DIR}/expr.cpp
     ${SRC_DIR}/inner_var.cpp
     ${SRC_DIR}/inner_constraint.cpp
     ${SRC_DIR}/solution.cpp
     ${SRC_DIR}/var.cpp
-    ${SRC_DIR}/adstack.cpp
-    ${SRC_DIR}/adstackelem.cpp
-    ${SRC_DIR}/econstraint.cpp
+    ${SRC_DIR}/cstack.cpp
+    ${SRC_DIR}/simstack.cpp
+    ${SRC_DIR}/pairhashmap.cpp
 	)
 
 install(TARGETS madopt ARCHIVE DESTINATION lib)
@@ -77,8 +78,8 @@ set(IPOPT_LIBS ipopt ${LAPACK_LIB_FN} ${BLAS_LIB_FN} ${HSL} ${MUMPS}
     coinmetis ${EXTRA_LIB})
 
 add_library(madopt_ipopt STATIC
-    ${SRC_DIR}/ipopt_model.cpp
     ${SRC_DIR}/ipopt_nlp.cpp
+    ${SRC_DIR}/ipopt_model.cpp
     )
 
 install(TARGETS madopt_ipopt ARCHIVE DESTINATION lib)
@@ -143,16 +144,14 @@ endif()
 #
 #
 add_executable(minitest
-    ${TEST_DIR}/tutorial_constraint.hpp
-    ${TEST_DIR}/tutorial_obj_term.hpp
     ${TEST_DIR}/minitest.cpp
-	)
+)
 
 target_link_libraries(minitest 
     madopt 
-    madopt_ipopt    
+    madopt_ipopt
     madopt_bonmin
-    ${BONMIN_LIBRARIES}     
+    ${BONMIN_LIBRARIES} 
     ) 
 
 # Test
@@ -166,13 +165,11 @@ if(CXXTEST_FOUND)
 
     CXXTEST_ADD_TEST(unittest_madopt unittest_madopt.cpp
         ../${TEST_DIR}/expr_tests.hpp
-        ../${TEST_DIR}/stack_tests.hpp
         ../${TEST_DIR}/econstraint_tests.hpp
         ../${TEST_DIR}/model_tests.hpp
         ../${TEST_DIR}/ipoptmodel_tests.hpp
         ../${TEST_DIR}/bonminmodel_tests.hpp
-        ../${TEST_DIR}/tutorial_constraint.hpp
-        ../${TEST_DIR}/tutorial_obj_term.hpp)
+    )
 
     target_link_libraries(unittest_madopt 
         madopt

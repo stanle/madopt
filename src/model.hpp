@@ -18,13 +18,16 @@
 
 #include "common.hpp"
 
-#include "adstack.hpp"
+#include "cstack.hpp"
+#include "simstack.hpp"
 #include "var.hpp"
 #include "param.hpp"
 #include "constraint.hpp"
 #include "solution.hpp"
 
 namespace MadOpt {
+
+//class ThreadPool;
 
 //! generic Model class, not for direct use hence the constructor is protected
 class Model {
@@ -48,8 +51,6 @@ class Model {
         //simply passes the options to the solver
         virtual void setIntegerOption(std::string key, int value){}
 
-        // init
-        void init();
         // Var stuff
         
         //! \sa addVar(double, double, double, string)
@@ -66,6 +67,9 @@ class Model {
 
         //! \sa addVar(double, double, double, string)
         Var addVar(double lb, double ub, string name);
+
+        //! \sa addVar(double, double, double, string)
+        Var addVar(double init, string name);
 
         //! \sa addVar(double, double, double, string)
         Var addCVar(double lb, double ub, double init, string name);
@@ -90,8 +94,8 @@ class Model {
          * @param[in] name name of the variable
          */
         Var addBVar(double init, string name);
+
         //Param stuff
-        
         /*! \brief add a new parameter to the model,
          * @param[in] value value
          * @param[in] name name of the variable
@@ -99,10 +103,6 @@ class Model {
         Param addParam(double value, string name);
 
         //Constraint stuff
-
-        //! add custom constraint that is derived from InnerConstraint
-        Constraint addConstr(InnerConstraint* con);
-
         /*! add new constraint that is based on Expr, lb <= expr <= ub
          * \param[in] expr the constraint expression
          * \param[in] ub the upper bound of the constraint
@@ -189,9 +189,18 @@ class Model {
         //! timelimit, a negative value is interpreted as no time limit
         double timelimit=-1;
 
-        const vector<InnerVar*> getVars()const { return vars; }
+        const vector<InnerVar*>& getVars()const { return vars; }
+
+        double lb(Idx idx) const;
+        void lb(Idx idx, double v);
+
+        double ub(Idx idx) const;
+        void ub(Idx idx, double v);
 
         const string toString()const;
+
+        SimStack& getSimStack(){ return simstack; }
+        CStack& getCStack(){ return cstack; }
 
     protected:
         bool model_changed=false;
@@ -200,7 +209,8 @@ class Model {
     private:
         vector<InnerParam*> params;
         vector<InnerConstraint*> constraints;
-        ADStack stack;
+        CStack cstack;
+        SimStack simstack;
         InnerConstraint* obj=nullptr;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;

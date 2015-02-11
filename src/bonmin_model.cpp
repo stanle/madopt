@@ -35,7 +35,7 @@ struct BonminModelImpl {
     }
 
     Bonmin::BonminSetup* Bapp;
-    Ipopt::SmartPtr<BonminUserClass> bonmin_callback;
+    Ipopt::SmartPtr<Bonmin::TMINLP> bonmin_callback;
 };
  
 }
@@ -49,9 +49,6 @@ BonminModel::~BonminModel(){
 }
 
 void BonminModel::solve(){
-    if (model_changed)
-        init();
-
     if (timelimit >= 0)
         setNumericOption("bonmin.time_limit", timelimit);
 

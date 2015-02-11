@@ -47,7 +47,8 @@ class InnerVar{
         double init()const ;
         void init(double v);
 
-        double x()const ;
+        double x()const;
+        double v()const;
 
         void solAsInit();
 
@@ -69,7 +70,7 @@ class InnerVar{
 
         bool is_fixed=false;
 
-        inline void checkBounds();
+        void checkBounds();
 };
 }
 #endif

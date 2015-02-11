@@ -24,7 +24,7 @@ class InnerParam{
 
         void value(const double v){ _value = v; }
 
-        double value()const { return _value; }
+        const double& value()const { return _value; }
 
         string name()const { return _name;}
 
