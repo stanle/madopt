@@ -23,12 +23,12 @@ PairHashMap::PairHashMap(const Idx& max_range): max_range(max_range){
 
 Idx& PairHashMap::operator[](const HashPair& p){
     Idx key = p.first+ p.second;
+    ASSERT_LE(key, mapping.size()-1, max_range);
     auto& bucket = mapping[key];
-
-    if (bucket.size() == 1)
-        return bucket.back().value;
+    TRACE(key, bucket.size(), str());
 
     for (auto& ht: bucket){
+        TRACE(ht.p, ht.value);
         if (ht.p == p)
             return ht.value;
     }
@@ -42,10 +42,13 @@ void PairHashMap::resize(const Idx& max_range){
 }
 
 string PairHashMap::str()const{
-    string res;
-    for (auto& bucket: mapping)
+    string res = "nofb=" + to_string(mapping.size()) + "::";
+    Idx key = 0;
+    for (auto& bucket: mapping){
+        res += "k=" + to_string(key++) + " ";
         for (auto& elem: bucket)
             res += to_string(elem.p) + ":" + to_string(elem.value) + " ";
+    }
     return res;
 }
 

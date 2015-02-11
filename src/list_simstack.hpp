@@ -45,7 +45,11 @@ class ListSimStack{
             Idx conflict_counter_pos = conflicts->getEndPosAndPush();
             (*conflicts)[conflict_counter_pos] = 0;
             const Idx& prev_start = positions.back(nofelems);
-            const Idx& last_start = positions.back(1);
+            const Idx& last_start = positions.back(nofelems-1);
+            TRACE(str());
+            TRACE("nof elems to merge=", nofelems,
+                    "prev begin=", prev_start,
+                    "last begin=", last_start);
             ASSERT_BETWEEN(1, prev_start, stack.size());
             ASSERT_BETWEEN(1, last_start, stack.size());
             for (Idx i=stack.size()-1; i>=last_start; i--){
@@ -58,8 +62,11 @@ class ListSimStack{
                     ASSERT_LE(elem.conflict, i);
                     conflicts->push(elem.conflict);
                     conflicts->push(i);
-                    TRACE("ins conf", (*conflicts)[conflict_counter_pos], 
-                            elem.conflict, i, conflicts->size());
+                    TRACE("ins conf", 
+                            "counter=", (*conflicts)[conflict_counter_pos], 
+                            "to=", elem.conflict, 
+                            "form=", i, 
+                            "nof confs=", conflicts->size());
                     setLastStackPos(elem.id, elem.conflict);
                     if (stack.size() != i){
                         elem = stack.pop();
@@ -69,6 +76,7 @@ class ListSimStack{
             }
             positions.pop(nofelems-1);
             ASSERT_UEQ(positions.size(), 0);
+            TRACE(str());
             TRACE_END;
         }
 
@@ -106,7 +114,7 @@ class ListSimStack{
             return _max_size;
         }
 
-        string str(){
+        virtual string str(){
             if (positions.size() == 0)
                 return "-";
             string res;

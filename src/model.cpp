@@ -86,6 +86,7 @@ Var Model::addBVar(double init, string name){
 //
 //
 Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
+    TRACE_START;
     if (lb > ub)
         throw MadOptError("lower bound is greater then upper bound for expr=" 
                 + expr.toString() 
@@ -97,11 +98,13 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
         if (&solution != &sol)
             throw MadOptError("cannot add variable from other model to this model");
     }
-    simstack.setXSize(vars.size());
+    TRACE(expr.toString());
+    simstack.setXSize(nx());
     auto con = new InnerConstraint(expr, lb, ub, hess_pos_map, simstack);
     cstack.resize(simstack);
     constraints.push_back(con);
     model_changed = true;
+    TRACE_END;
     return Constraint(this, constraints.size()-1);
 }
 
@@ -121,10 +124,10 @@ Constraint Model::addConstr(const double lb, const Expr& expr){
 //
 //
 void Model::setObj(const Expr& expr){
-    simstack.setXSize(vars.size());
     model_changed = true;
     if (obj != nullptr)
         delete obj;
+    simstack.setXSize(nx());
     obj = new InnerConstraint(expr, hess_pos_map, simstack);
     cstack.resize(simstack);
     obj_jac_map.clear();

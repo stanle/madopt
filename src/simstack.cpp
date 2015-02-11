@@ -54,6 +54,7 @@ void SimStack::doUnaryOp(const double& jac_value, const double& hess_value){
 }
 
 void SimStack::emplace_back(const Idx& id){
+    TRACE_START;
     ASSERT(id >= 0);
     _size += 1;
     if (_size > _max_size)
@@ -61,10 +62,12 @@ void SimStack::emplace_back(const Idx& id){
     jac_stack.emplace_back(id);
     hess_stack.emplace_back_empty();
     ASSERT_UEQ(hess_stack.getPos().size(), 0);
-    TRACE(str());
+    TRACE(id, str());
+    TRACE_END;
 }
 
 void SimStack::emplace_back(const double& value){
+    TRACE_START;
     _size += 1;
     if (_size > _max_size)
         _max_size = _size;
@@ -72,6 +75,7 @@ void SimStack::emplace_back(const double& value){
     hess_stack.emplace_back_empty();
     ASSERT_UEQ(hess_stack.getPos().size(), 0);
     TRACE(str());
+    TRACE_END;
 }
 
 void SimStack::clear(){
@@ -85,12 +89,14 @@ void SimStack::clear(){
 }
 
 vector<Idx> SimStack::getJacEntries(){
+    TRACE_START;
     vector<Idx> res;
     const auto& stack = jac_stack.getStack();
     const auto& pos = jac_stack.getPos();
     ASSERT_UEQ(pos.size(), 0);
     for (Idx i=pos.back(); i<stack.size(); i++)
         res.push_back(stack[i].id);
+    TRACE_END;
     return res;
 }
 
@@ -128,8 +134,10 @@ const Idx& SimStack::max_hess_size()const{
 }
 
 void SimStack::setXSize(const Idx& size){
+    TRACE_START;
     jac_stack.setXSize(size);
     hess_stack.setXSize(size);
+    TRACE_END;
 }
 
 string SimStack::str(){

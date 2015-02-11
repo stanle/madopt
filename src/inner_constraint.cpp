@@ -85,7 +85,6 @@ InnerConstraint::InnerConstraint(
         }
     }
 
-    stack.clear();
     stack.setConflicts(&conflicts);
     ASSERT_EQ(stack.size(), 0);
     computeFinalStack(stack);
@@ -104,6 +103,8 @@ InnerConstraint::InnerConstraint(
     jac.resize(jac_entries.size());
     ASSERT_IF(operators.back() != OP_CONST, jac.data() != nullptr);
     TRACE("conf elems", conflicts.str());
+    TRACE("final simstack", stack.str());
+    stack.clear();
 }
 
 InnerConstraint::InnerConstraint(
@@ -216,10 +217,10 @@ void InnerConstraint::caseMUL(Stack& stack){
 }
 
 void InnerConstraint::caseVAR_POINTER(Stack& stack){
-   TRACE_START;
+    TRACE_START;
     const auto& pos = getNextPos(stack.getDataI());
     stack.emplace_back(pos);
-   TRACE_END;
+    TRACE_END;
 }
 
 void InnerConstraint::casePARAM_POINTER(Stack& stack){

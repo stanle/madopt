@@ -71,6 +71,12 @@ class HessSimStack : public ListSimStack<PII> {
         void setXSize(const Idx& size){
             last_pos_map.resize(size);
         }
+        
+        string str(){
+            string res = "Stack= " + ListSimStack::str();
+            res += " LastPosMap= " + last_pos_map.str();
+            return res;
+        }
 
     private:
         PairHashMap last_pos_map;
@@ -81,20 +87,26 @@ class HessSimStack : public ListSimStack<PII> {
         }
 
         void clearLastStackPos(){
+            TRACE_START;
+            TRACE(str());
+            TRACE(last_pos_map.str());
             for (Idx i=1; i<stack.size(); i++)
                 last_pos_map[stack[i].id] = 0;
+            TRACE_END;
         }
 
         void push(const PII id){
             TRACE_START;
+            TRACE(str());
+            TRACE("id=", id);
             ASSERT_LE(positions.back(), stack.size());
             auto& new_elem = stack.getEndAndPush();
             new_elem.id = id;
             auto& c = last_pos_map[new_elem.id];
+            TRACE(last_pos_map.str());
             ASSERT_LE(c, stack.size()-1, last_pos_map.str());
             new_elem.conflict = c;
             c = stack.size()-1;
-            TRACE(id, "old conf=", new_elem.conflict, "new conf=", c);
             if (stack.size() > _max_size)
                 _max_size = stack.size();
             TRACE_END;

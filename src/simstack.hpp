@@ -49,6 +49,8 @@ class SimStack: public Stack {
 
         Idx& getDataI();
 
+        string str();
+
     private:
         double dummy=0;
         JacSimStack jac_stack;
@@ -56,8 +58,6 @@ class SimStack: public Stack {
         Idx _size=0;
         Idx _max_size=0;
         Idx data_i=0;
-
-        string str();
 };
 }
 #endif

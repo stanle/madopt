@@ -24,6 +24,13 @@
 using namespace MadOpt;
 
 void playground(double a, int b){
+    vector<double> x(b);
+
+    //for (size_t i=0; i<x.size(); i++)
+    for (size_t i=x.size()-1; i!=0; i--)
+        x[i] = 2*i;
+
+    std::cout<<"END"<<std::endl;
 }
 
 void profile(double a, int b){
@@ -51,13 +58,16 @@ void profile(double a, int b){
     }
 }
 
-void test(double d, int i){
+void test(double d, int n){
     IpoptModel m;
     m.show_solver = true;
-    Var b = m.addVar(0, "b");
-    m.addEqConstr(cos(b), 0);
-    m.setObj(Expr(0));
-    m.setStringOption("hessian_approximation", "limited_memory");
+    Expr obj(1);
+    for (int i=0; i<n; i++){
+        Var x = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        obj *= x;
+        m.addConstr(-INF, x, 0);
+    }
+    m.setObj(obj);
     m.solve();
 }
 

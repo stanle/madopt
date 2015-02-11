@@ -23,6 +23,7 @@ class ModelTest: public CxxTest::TestSuite {
         void testModelExp(){
            TestModel m;
             Idx N = pow(10, 2);
+            N = 4;
             vector<Var> x(N);
             Expr obj(0);
             for (Idx i=0; i<N; i++){
