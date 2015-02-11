@@ -25,7 +25,7 @@ namespace MadOpt {
             ipopt_callback = new IpoptUserClass(model);
         }
         IpoptApplication Iapp;
-        Ipopt::SmartPtr<IpoptUserClass> ipopt_callback;
+        Ipopt::SmartPtr<Ipopt::TNLP> ipopt_callback;
     };
 }
 

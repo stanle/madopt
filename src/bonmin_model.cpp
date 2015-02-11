@@ -35,7 +35,7 @@ struct BonminModelImpl {
     }
 
     Bonmin::BonminSetup* Bapp;
-    Ipopt::SmartPtr<BonminUserClass> bonmin_callback;
+    Ipopt::SmartPtr<Bonmin::TMINLP> bonmin_callback;
 };
  
 }
