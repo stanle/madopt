@@ -51,7 +51,7 @@ make install
 The python interface depends on [cython](http://cython.org/). 
 Madopt can be complied for python 2 or 3 as long as the right cython version is present.
 To use the python interface it is not neccessary to install the C++ libraries.
-To build and install the python module run
+To build and install the python module run the [setup](setup.py) file in the base path of madopt. For example after doing the build we run
 ```
 cd ..
 python setup.py install
@@ -65,8 +65,8 @@ python setup.py build_ext --inplace
 
 Examples
 ========
-An example for the usage with C++ can be found in [examples/get_started.cpp](examples/get_started.cpp)
-To compile and run the example one can use the [cmake file](examples/get_started.cpp) provided in the examples folder, for example by running
+An example for the usage with **C++** can be found in [examples/get_started.cpp](examples/get_started.cpp)
+To compile and run the example one can use the simple cmake [file](examples/CMakeLists.txt) provided in the examples folder, for example by running
 ```
 cd examples
 cmake .
@@ -74,7 +74,7 @@ make
 ./get_started
 ```
 
-An example for the usage can be found in [examples/get_started.py](examples/get_started.py). To run it call
+An example for the usage with **python** can be found in [examples/get_started.py](examples/get_started.py). To run it call
 ```
 python examples/get_started.py
 ```
