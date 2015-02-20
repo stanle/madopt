@@ -24,7 +24,7 @@ setup(
     version = '0.5',
     cmdclass = {'build_ext' : build_ext},
     ext_modules = ext_modules,
-    packages=['madopt'],
+    packages=[''],
     url="https://github.com/stanle/madopt",
     author="Karsten Lehmann",
     license="Apache License Version 2.0"
