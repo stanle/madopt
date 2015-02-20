@@ -2,58 +2,30 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-bonmin_libs = [
-    'ipopt',
-    'bonmin',
-    'Cbc',
-    'Cgl',
-    'Clp',
-    'CoinUtils',
-    'Osi',
-    'OsiCbc',
-    'OsiClp',
-    'coinhsl',
-    'dl',
-    'pthread',
-    'blas',
-    'lapack',
-    'coinmetis',
-    'coinmumps',
-    'z',
-    'bz2',
-]
+build = "build/"
 
-libs = bonmin_libs
+sources=[ 'src/madopt.pyx' ]
+libs = ["libmadopt.a", "libmadopt_ipopt.a", "libmadopt_bonmin.a" ]
+dependencies = ["ipopt", "bonmin"]
+
+libs = [build + x for x in libs]
 
 ext_modules = [
         Extension('madopt',
-			sources=[
-				'src/madopt.pyx',
-                                'src/ipopt_model.cpp',
-                                'src/bonmin_model.cpp',
-				'src/model.cpp',
-                                'src/constraint.cpp',
-				'src/common.cpp',
-				'src/expr.cpp',
-                                'src/inner_var.cpp',
-                                'src/inner_constraint.cpp',
-                                'src/solution.cpp',
-                                'src/var.cpp',
-                                'src/cstack.cpp',
-                                'src/simstack.cpp',
-                                'src/pairhashmap.cpp',
-				'src/ipopt_nlp.cpp',
-				'src/bonmin_minlp.cpp',
-				],
-			extra_compile_args=['--std=c++11', '-g'],
-			libraries=libs,
-			language="c++")
+            sources=sources,
+            extra_compile_args=['--std=c++11'],
+            extra_objects=libs,
+            libraries=dependencies,
+            language="c++")
         ]
 
 setup(
     name = 'madopt',
-    version = '0.1',
+    version = '0.5',
     cmdclass = {'build_ext' : build_ext},
     ext_modules = ext_modules,
-    packages=['']
+    packages=['madopt'],
+    url="https://github.com/stanle/madopt",
+    author="Karsten Lehmann",
+    license="Apache License Version 2.0"
 )

@@ -68,9 +68,11 @@ void BonminUserClass::finalize_solution(SolverReturn status, Index n, const Numb
             s = Solution::SolverStatus::CPUTIME_EXCEEDED;
             break;
 
+#ifndef BONMIN_HAS_USER_INTERRUPT
         case SolverReturn::USER_INTERRUPT:
             s = Solution::SolverStatus::USER_REQUESTED_STOP;
             break;
+#endif
 
         case SolverReturn::MINLP_ERROR:
             s = Solution::SolverStatus::INTERNAL_ERROR;
@@ -100,6 +102,10 @@ bool BonminUserClass::get_starting_point(Index n, bool init_x, Number* x,
     ASSERT((unsigned int)n==solver->nx());
     if (init_x)
         solver->getInits(x);
+    if (init_z)
+        throw MadOptError("init dual values not implemented");
+    if (init_lambda)
+        throw MadOptError("init lambdas not implemented");
     return true;
   }
 

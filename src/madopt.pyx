@@ -91,16 +91,6 @@ cdef extern from "model.hpp":
         bool hasSolution()
 
 
-cdef extern from "ipopt_model.hpp":
-    cdef cppclass IpoptModel_ "MadOpt::IpoptModel"(Model_):
-        IpoptModel_()
-
-
-cdef extern from "bonmin_model.hpp":
-    cdef cppclass BonminModel_ "MadOpt::BonminModel"(Model_):
-        BonminModel_()
-
-
 INFINITY = INF
 
 def convert(e):
@@ -404,6 +394,9 @@ cdef class Model:
         elif isinstance(value, float):
             self.model_.setNumericOption(key, value)
 
+cdef extern from "ipopt_model.hpp":
+    cdef cppclass IpoptModel_ "MadOpt::IpoptModel"(Model_):
+        IpoptModel_()
 
 cdef class IpoptModel(Model):
     def __cinit__(self):
@@ -411,6 +404,10 @@ cdef class IpoptModel(Model):
 
     def __dealloc__(self):
         del self.model_
+
+cdef extern from "bonmin_model.hpp":
+    cdef cppclass BonminModel_ "MadOpt::BonminModel"(Model_):
+        BonminModel_()
 
 cdef class BonminModel(Model):
     def __cinit__(self):
