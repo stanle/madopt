@@ -25,51 +25,55 @@ neccessary:
 optional:
 - Bonmin
 
-Install C++
-===========
+Install
+=======
 Running
 ```
 mkdir build
 cd build
 cmake ..
 make
-make install
 ```
-creates and installs static libraries called **libmadopt.a** and **libmadopt_ipopt.a**.
+creates static libraries called **libmadopt.a** and **libmadopt_ipopt.a**.
 If libbonmin is found on the system then the static library **libmadopt_bonmin.a**
-will be build and installed as well.
+will be build as well.
 To build madopt using a custom path to the ipopt/bonmin libraries and headers
 use
 ```
 cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
 ```
-An example for the usage can be found in [examples/get_started.cpp](examples/get_started.cpp)
-If Ipopt is complied without HSL, to compile and run the example run
+
+To be able to use the C++ version of madopt one has to install the libraries by running
 ```
-g++ ../examples/get_started.cpp --std=c++11 -lmadopt_ipopt -lmadopt -lipopt -lcoinmetis -llapack -lcoinmumps -lpthread -ldl -lm -lz -lbz2 -lblas -o get_started
-./get_started
+make install
 ```
-If Ipopt is complied with HSL, to compile and run the example use
+
+The python interface depends on [cython](http://cython.org/). 
+Madopt can be complied for python 2 or 3 as long as the right cython version is present.
+To use the python interface it is not neccessary to install the C++ libraries.
+To build and install the python module run
 ```
-g++ ../examples/get_started.cpp --std=c++11 -lmadopt_ipopt -lmadopt -lipopt -lcoinhsl -lcoinmetis -llapack -lcoinmumps -lpthread -ldl -lm -lz -lbz2 -lblas -o get_started
+cd ..
+python setup.py install
+```
+
+To build a python module object ''madopt.so'' that can be copied to wherever it may be used run
+```
+cd ..
+python setup.py build_ext --inplace
+```
+
+Examples
+========
+An example for the usage with C++ can be found in [examples/get_started.cpp](examples/get_started.cpp)
+To compile and run the example one can use the [cmake file](examples/get_started.cpp) provided in the examples folder, for example by running
+```
+cd examples
+cmake .
+make
 ./get_started
 ```
 
-Install Python
-==============
-The python interface depends on [cython](http://cython.org/). 
-Madopt can be complied for python 2 or 3 as long as the right cython version is present.
-To use the python interface it is not neccessary to build and/or install the
-C++ libraries.
-A module object ''madopt.so'' that can be copied to wherever it may be used is
-build by running
-```
-python setup.py build_ext --inplace
-```
-To install the module into python globally run
-```
-python setup.py install
-```
 An example for the usage can be found in [examples/get_started.py](examples/get_started.py). To run it call
 ```
 python examples/get_started.py
