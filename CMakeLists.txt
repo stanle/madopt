@@ -7,15 +7,19 @@ set(VERSION_PATCH   1   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 INCLUDE (CheckCXXSourceCompiles)
+include(CheckCXXCompilerFlag)
 
-set(CXX_FLAGS_COM "${CXX_FLAGS_COM} -std=c++11 -fPIC")
-
-# cmake automatically sets some flags based on compiler for debug and release
-# Can select which we want with -DCMAKE_BUILD_TYPE=release
-set(CMAKE_CXX_FLAGS "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} -Wall -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_PROFILE "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_PROFILE} -g -pg")
+check_cxx_compiler_flag(-std=c++11 HAS_STDCPP11)
+if (HAS_STDCPP11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+    check_cxx_compiler_flag(-std=c++0x HAS_STDCPP0X)
+    if (HAS_STDCPP0X)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    else()
+        message(FATAL_ERROR "the used compiler does not seem to support c++11 which is crucial, CMake exits")
+    endif()
+endif()
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
