@@ -20,10 +20,8 @@ Dependencies
 ============
 neccessary:
 - c++11 std
-- Ipopt
-
-optional:
-- Bonmin
+- Bonmin >= 1.8
+(Bonmin includes Ipopt)
 
 Install
 =======
@@ -34,11 +32,9 @@ cd build
 cmake ..
 make
 ```
-creates static libraries called **libmadopt.a** and **libmadopt_ipopt.a**.
-If libbonmin is found on the system then the static library **libmadopt_bonmin.a**
-will be build as well.
-To build madopt using a custom path to the ipopt/bonmin libraries and headers
-use
+creates static libraries called **libmadopt.a**, **libmadopt_ipopt.a** and **libmadopt_bonmin.a**.
+If you have installed ipopt/bonmin in custom location, you can provide the absolute! path to the ipopt/bonmin libraries and headers via
+
 ```
 cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
 ```
@@ -50,7 +46,7 @@ make install
 
 The python interface depends on [cython](http://cython.org/). 
 Madopt can be complied for python 2 or 3 as long as the right cython version is present.
-To use the python interface it is not neccessary to install the C++ libraries.
+To use the python interface it is not neccessary to install the C++ libraries, however they have to be build.
 To build and install the python module run the [setup](setup.py) file in the base path of madopt. For example after doing the build we run
 ```
 cd ..
@@ -66,7 +62,7 @@ python setup.py build_ext --inplace
 Examples
 ========
 An example for the usage with **C++** can be found in [examples/get_started.cpp](examples/get_started.cpp)
-To compile and run the example one can use the simple cmake [file](examples/CMakeLists.txt) provided in the examples folder, for example by running
+To compile and run the example one can use the simple cmake [file](examples/CMakeLists.txt) provided in the examples folder if, for example by running
 ```
 cd examples
 cmake .
