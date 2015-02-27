@@ -18,7 +18,6 @@ Supported Operators are
 
 Dependencies
 ============
-neccessary:
 - c++11 std
 - Bonmin >= 1.8
 (Bonmin includes Ipopt)
@@ -33,7 +32,7 @@ cmake ..
 make
 ```
 creates static libraries called **libmadopt.a**, **libmadopt_ipopt.a** and **libmadopt_bonmin.a**.
-If you have installed ipopt/bonmin in custom location, you can provide the absolute! path to the ipopt/bonmin libraries and headers via
+If ipopt/bonmin is installed in a custom location, one can provide the **absolute** path to the ipopt/bonmin libraries and headers via
 
 ```
 cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
@@ -47,7 +46,7 @@ make install
 The python interface depends on [cython](http://cython.org/). 
 Madopt can be complied for python 2 or 3 as long as the right cython version is present.
 To use the python interface it is not neccessary to install the C++ libraries, however they have to be build.
-To build and install the python module run the [setup](setup.py) file in the base path of madopt. For example after doing the build we run
+To build and install the python module run the [setup](setup.py) file in the base path of madopt. For example after doing the build run
 ```
 cd ..
 python setup.py install
@@ -84,4 +83,3 @@ Citing
 ======
 
 If you are using madopt for your research, please consider citing the Ipopt project. The details on how to cite it can be found on the Ipopt [website](https://projects.coin-or.org/Ipopt).
-
