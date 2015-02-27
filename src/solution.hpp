@@ -24,7 +24,6 @@ namespace MadOpt {
 //! solution class
 class Solution{
     public:
-
         //! enum for solver status, copied from ipopt
         enum SolverStatus {
             SUCCESS,
@@ -47,7 +46,9 @@ class Solution{
             NO_RUN=-1
         };
 
-        void set(const SolverStatus status,
+	Solution(): _status(SolverStatus::NO_RUN), lambda_loaded(){}
+        
+	void set(const SolverStatus status,
                 const Idx x_size, const Idx l_size, 
                 const double obj_value, 
                 const double* x, const double* lambda);
@@ -82,8 +83,8 @@ class Solution{
         vector<double> _x;
         vector<double> _l;
         double _obj_value;
-        SolverStatus _status = SolverStatus::NO_RUN;
-        bool lambda_loaded=false;
+        SolverStatus _status;
+        bool lambda_loaded;
 };
 
 }

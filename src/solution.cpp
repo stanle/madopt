@@ -47,7 +47,7 @@ void Solution::set(const Solution::SolverStatus status,
         const Idx x_size, 
         const double obj_value, 
         const double* x){
-    set(status, x_size, 0, obj_value, x, nullptr);
+    set(status, x_size, 0, obj_value, x, NULL);
 }
 
 Idx Solution::nx()const {

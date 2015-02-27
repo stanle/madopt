@@ -120,8 +120,10 @@ class Operator{
             else setValue(getValue() + v);
         } 
 
-        string toString(){
-            return std::to_string(type) + ": c=" + std::to_string(value) + " v=" + std::to_string(getValue());
+        string toString()const {
+            return std::to_string((long long int)type) + 
+                ": c=" + std::to_string((long long unsigned int)value) 
+                + " v=" + std::to_string((long double)getValue());
         }
 
     private:

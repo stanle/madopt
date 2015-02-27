@@ -18,14 +18,15 @@
 
 #include "common.hpp"
 
-#include <exception>
+#include <stdexcept>
+//#include <exception>
 #include <string>
 
 namespace MadOpt {
 
 using namespace std;
 
-class MadOptError: public runtime_error{
+class MadOptError: public runtime_error {
     public:
         MadOptError(const string& t): runtime_error(t){}
 };

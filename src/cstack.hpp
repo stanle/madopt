@@ -26,6 +26,8 @@ class SimStack;
 
 class CStack: public Stack {
     public:
+	CStack(): data_i(0){}
+
         void doAdd(const Idx& nofelems);
         void doMull(); 
         double& lastG();
@@ -51,7 +53,7 @@ class CStack: public Stack {
         ListCStack hess_stack;
         Array<Idx>* conflicts;
         const double* x;
-        Idx data_i=0;
+        Idx data_i;
 };
 }
 #endif

@@ -24,31 +24,37 @@ std::string MadOpt::doubleToString(const double a_value, int p){
 }
 
 std::string MadOpt::to_string(PII p){
-    return "(" + std::to_string(p.first) + " " + std::to_string(p.second) + ")";
+    return "(" + std::to_string((long long unsigned int)p.first) + " " + std::to_string((long long unsigned int)p.second) + ")";
 }
 
 std::string MadOpt::to_string(Idx p){
-    return std::to_string(p);
+    return std::to_string((long long unsigned int)p);
 }
 
 std::string MadOpt::to_string(vector<Idx> v){
     std::string res;
-    for (auto& elem: v)
+    FOREACH(elem, v)
+    //for (auto& elem: v){
         res += to_string(elem) + " ";
+    }
     return res;
 }
 
 std::string MadOpt::to_string(vector<PII> v){
     std::string res;
-    for (auto& elem: v)
+    FOREACH(elem, v)
+    //for (auto& elem: v){
         res += to_string(elem) + " ";
+    }
     return res;
 }
 
 std::string MadOpt::to_string(vector<double> v){
     std::string res;
-    for (auto& elem: v)
+    FOREACH(elem, v)
+    //for (auto& elem: v){
         res += to_string(elem) + " ";
+    }
     return res;
 }
 /* ex: set tabstop=4 shiftwidth=4 expandtab: */

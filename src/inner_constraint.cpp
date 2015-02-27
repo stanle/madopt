@@ -90,7 +90,8 @@ InnerConstraint::InnerConstraint(
     computeFinalStack(stack);
     ASSERT_EQ(stack.size(), 1);
     vector<PII> hess_entries = stack.getHessEntries();
-    for (auto& p : hess_entries){
+    FOREACH(p, hess_entries)
+    //for (auto& p : hess_entries){
         auto it = hess_pos_map.find(p);
         if (it == hess_pos_map.end())
             hess_pos_map[p] = hess_pos_map.size() - 1;
@@ -107,11 +108,11 @@ InnerConstraint::InnerConstraint(
     stack.clear();
 }
 
-InnerConstraint::InnerConstraint(
-        const Expr& expr, 
-        HessPosMap& hess_pos_map,
-        SimStack& stack): 
-    InnerConstraint(expr, 0, 0, hess_pos_map, stack){}
+//InnerConstraint::InnerConstraint(
+//        const Expr& expr, 
+//        HessPosMap& hess_pos_map,
+//        SimStack& stack): 
+//    InnerConstraint(expr, 0, 0, hess_pos_map, stack){}
 
 double InnerConstraint::lb(){
     return _lb; 
@@ -140,8 +141,10 @@ const vector<Idx>& InnerConstraint::getJacEntries(){
 
 void InnerConstraint::getNZ_Jac(unsigned int* jCol){
     Idx data_i = 0;
-    for (auto id : jac_entries)
+    FOREACH(id, jac_entries)
+    //for (auto id : jac_entries){
         jCol[data_i++] = id;
+    }
 }
 
 void InnerConstraint::setEvals(CStack& stack){
@@ -181,7 +184,8 @@ const double& InnerConstraint::getNextParamValue(Idx& idx){
 void InnerConstraint::computeFinalStack(Stack& stack){
     TRACE_START;
     ASSERT_EQ(stack.getDataI(), 0);
-    for (auto& op: operators){
+    FOREACH(op, operators)
+    //for (auto& op: operators){
         switch(op){
             MADOPTCASE(VAR_POINTER)
             MADOPTCASE(CONST)

@@ -68,7 +68,7 @@ class InnerVar{
         VarType type;
         const Solution& sol;
 
-        bool is_fixed=false;
+        bool is_fixed;
 
         void checkBounds();
 };

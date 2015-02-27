@@ -28,7 +28,7 @@ namespace MadOpt {
 template<class T>
 class ListSimStack{
     public:
-        ListSimStack():stack(1){}
+        ListSimStack():stack(1), _max_size(0){}
 
         virtual ~ListSimStack(){}
 
@@ -135,7 +135,7 @@ class ListSimStack{
         Array<Idx> positions;
         Array<Idx>* conflicts;
 
-        Idx _max_size=0;
+        Idx _max_size;
 
         virtual void setLastStackPos(const T& id, const Idx& conflict)=0;
         virtual void clearLastStackPos()=0;

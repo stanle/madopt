@@ -35,7 +35,7 @@ class InnerConstraint{
         InnerConstraint(const Expr& expr, const double _lb, const double _ub,
                 HessPosMap& hess_pos_map, SimStack& stack);
 
-        InnerConstraint(const Expr& expr, HessPosMap& hess_pos_map, SimStack& stack);
+        //InnerConstraint(const Expr& expr, HessPosMap& hess_pos_map, SimStack& stack);
 
         // bounds
         //

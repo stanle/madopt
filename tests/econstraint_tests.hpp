@@ -35,7 +35,7 @@ class EConstraintTest: public CxxTest::TestSuite {
             TestModel m;
             auto& simstack = m.getSimStack();
             simstack.setXSize(x.size());
-            InnerConstraint e(exp, hess_pos_map, simstack);
+            InnerConstraint e(exp, 0, 0, hess_pos_map, simstack);
 
             map<int, double> jacvm;
             for (Idx i=0; i<jac_entries.size(); i++)

@@ -27,16 +27,22 @@
 using namespace MadOpt;
 
 Model::~Model(){
-    for (auto& p: vars)
+    FOREACH(p, vars)
+    //for (auto& p: vars){
         delete p;
+    }
 
-    for (auto& p: params)
+    FOREACH(p, params)
+    //for (auto& p: params){
         delete p;
+    }
 
-    for (auto& p: constraints)
+    FOREACH(p, constraints)
+    //for (auto& p: constraints){
         delete p;
+    }
 
-    if (obj != nullptr){
+    if (obj != 0){
         delete obj;
     }
 }
@@ -90,10 +96,11 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
     if (lb > ub)
         throw MadOptError("lower bound is greater then upper bound for expr=" 
                 + expr.toString() 
-                + " lb=" + std::to_string(lb) 
-                + " ub=" + std::to_string(ub));
+                + " lb=" + std::to_string((long double)lb) 
+                + " ub=" + std::to_string((long double)ub));
     auto vars = expr.getInnerVariables();
-    for (auto& var: vars){
+    FOREACH(var, vars)
+    //for (auto& var: vars){
         const Solution& sol = var->getSolution();
         if (&solution != &sol)
             throw MadOptError("cannot add variable from other model to this model");
@@ -125,10 +132,10 @@ Constraint Model::addConstr(const double lb, const Expr& expr){
 //
 void Model::setObj(const Expr& expr){
     model_changed = true;
-    if (obj != nullptr)
+    if (obj != 0)
         delete obj;
     simstack.setXSize(nx());
-    obj = new InnerConstraint(expr, hess_pos_map, simstack);
+    obj = new InnerConstraint(expr, 0, 0, hess_pos_map, simstack);
     cstack.resize(simstack);
     obj_jac_map.clear();
     obj_jac_map.resize(obj->getNNZ_Jac());
@@ -140,7 +147,8 @@ void Model::setObj(const Expr& expr){
 //
 Idx Model::getNNZ_Jac(){
     int res = 0;
-    for (auto& constr: constraints){
+    FOREACH(constr, constraints)
+    //for (auto& constr: constraints){
         res += constr->getNNZ_Jac();
     }
     VALGRIND_CONDITIONAL_JUMP_TEST(res);
@@ -155,7 +163,8 @@ void Model::getNZ_Jac(int* iRow, int* jCol){
     TRACE_START;
     int nz = 0;
     int pos = 0;
-    for (auto& constr: constraints){
+    FOREACH(constr, constraints)
+    //for (auto& constr: constraints){
         Idx size = constr->getNNZ_Jac();
         for (Idx i=0; i<size; i++){
             iRow[nz + i] = pos;
@@ -170,7 +179,8 @@ void Model::getNZ_Jac(int* iRow, int* jCol){
 }
 
 void Model::getNZ_Hess(int* iRow, int* jCol){
-    for (auto& it: hess_pos_map){
+    FOREACH(it, hess_pos_map)
+    //for (auto& it: hess_pos_map){
         iRow[it.second] = it.first.first;
         jCol[it.second] = it.first.second;
     }
@@ -200,8 +210,10 @@ void Model::getInits(double* xi){
 }
 
 void Model::solAsInit(){
-    for (auto& var: vars)
+    FOREACH(var, vars)
+    //for (auto& var: vars){
         var->solAsInit();
+    }
 }
 
 Idx Model::nx() const{
@@ -223,8 +235,10 @@ Idx Model::np() const{
 void Model::setEvals(const double* x){
     cstack.setX(x);
     obj->setEvals(cstack);
-    for (auto& constraint: constraints)
+    FOREACH(constraint, constraints)
+    //for (auto& constraint: constraints){
         constraint->setEvals(cstack);
+    }
 }
 
 void Model::eval_f(const double* x, bool new_x, double& obj_value){
@@ -239,7 +253,8 @@ void Model::eval_grad_f(const double* x, bool new_x, double* grad_f){
         grad_f[i] = 0;
 
     Idx i=0;
-    for (auto& value: obj->getJac()){
+    FOREACH(value, obj->getJac())
+    //for (auto& value: obj->getJac()){
         VALGRIND_CONDITIONAL_JUMP_TEST(value);
         grad_f[obj_jac_map[i++]] = value;
     }
@@ -256,7 +271,8 @@ void Model::eval_g(const double* x, bool new_x, double* g){
 void Model::eval_jac_g(const double* x, bool new_x, double* values){
     if (new_x) setEvals(x);
     int nz = 0;
-    for (auto& constraint: constraints){
+    FOREACH(constraint, constraints)
+    //for (auto& constraint: constraints){
         auto& jac = constraint->getJac();
         std::copy(jac.begin(), jac.end(), &(values[nz]));
         nz += jac.size();
@@ -307,8 +323,10 @@ bool Model::hasSolution() const{
 
 const string Model::toString()const {
     string res;
-    for (auto& var : vars)
+    FOREACH(var, vars)
+    //for (auto& var : vars){
         res += var->toString() + "\n";
+    }
 
 //    for (auto constraint: constraints)
 //        res += constraint->toString() + "\n";

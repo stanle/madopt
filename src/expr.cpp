@@ -19,6 +19,8 @@
 
 namespace MadOpt {
 
+Expr::Expr(Expr&& other): ops(other.ops){}
+
 Expr::Expr(double constant){
     ops.emplace_front(OP_CONST, constant);
 }
@@ -169,8 +171,10 @@ std::ostream &operator<<(std::ostream &os, const Expr &a){
 
 string Expr::opsToString()const {
     string res;
-    for (auto op: ops)
+    FOREACH(op, ops)
+    //for (auto op: ops){
         res += op.toString() + "\n";
+    }
     return res;
 }
 
@@ -198,9 +202,11 @@ bool Expr::isOne()const {
 
 set<InnerVar*> Expr::getInnerVariables()const {
     set<InnerVar*> vars;
-    for (auto op: ops)
+    FOREACH(op, ops)
+    //for (auto op: ops){
         if (op.getType() == OP_VAR_POINTER)
             vars.insert(op.getIVar());
+    }
     return vars;
 }
 

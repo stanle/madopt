@@ -29,7 +29,7 @@ namespace MadOpt {
     };
 }
 
-IpoptModel::IpoptModel(){
+IpoptModel::IpoptModel(): Model(){
     impl = new IpoptModelImpl(this);
 }
 

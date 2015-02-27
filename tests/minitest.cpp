@@ -40,7 +40,7 @@ void profile(double a, int b){
     Expr obj(0);
     vector<Var> x(N);
     for (int i=0; i<N; i++){
-        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string((long long int)i));
         obj += pow(x[i] - 1, 2);
     }
     m.setObj(obj);
@@ -63,7 +63,7 @@ void test(double d, int n){
     m.show_solver = true;
     Expr obj(1);
     for (int i=0; i<n; i++){
-        Var x = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        Var x = m.addVar(-1.5, 0, -0.5, "x" + to_string((long long int)i));
         obj *= x;
         m.addConstr(-INF, x, 0);
     }
@@ -74,7 +74,7 @@ void test(double d, int n){
 void constructModel(const int N, IpoptModel& m, vector<Var>& x){
     Expr obj(0);
     for (int i=0; i<N; i++){
-        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string(i));
+        x[i] = m.addVar(-1.5, 0, -0.5, "x" + to_string((long long int)i));
         obj += pow(x[i] - 1, 2);
     }
     m.setObj(obj);

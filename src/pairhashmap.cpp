@@ -26,8 +26,9 @@ Idx& PairHashMap::operator[](const HashPair& p){
     ASSERT_LE(key, mapping.size()-1, max_range);
     auto& bucket = mapping[key];
     TRACE(key, bucket.size(), str());
-
-    for (auto& ht: bucket){
+    
+    FOREACH(ht, bucket)
+    //for (auto& ht: bucket){
         TRACE(ht.p, ht.value);
         if (ht.p == p)
             return ht.value;
@@ -44,12 +45,16 @@ void PairHashMap::resize(const Idx& max_range){
 string PairHashMap::str()const{
     string res = "nofb=" + to_string(mapping.size()) + "::";
     Idx key = 0;
-    for (auto& bucket: mapping){
+    FOREACH(bucket, mapping)
+    //for (auto& bucket: mapping){
         res += "k=" + to_string(key++) + " ";
-        for (auto& elem: bucket)
+        FOREACH(elem, bucket)
+        //for (auto& elem: bucket){
             res += to_string(elem.p) + ":" + to_string(elem.value) + " ";
+        }
     }
     return res;
 }
 
 }
+/* ex: set tabstop=4 shiftwidth=4 expandtab: */

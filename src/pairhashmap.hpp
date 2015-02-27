@@ -44,7 +44,7 @@ class PairHashMap {
 
         vector< vector<HashTuple> > mapping;
 
-        Idx max_range=0;
+        Idx max_range;
 };
 }
 #endif

@@ -137,8 +137,8 @@ class Array {
 
     private:
         std::vector<T> data;
-        Idx data_end=0;
-        Idx iter = 0;
+        Idx data_end;
+        Idx iter;
 
         void ensureElem(){
             if (data_end == data.size())

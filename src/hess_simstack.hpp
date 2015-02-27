@@ -73,7 +73,7 @@ class HessSimStack : public ListSimStack<PII> {
         }
         
         string str(){
-            string res = "Stack= " + ListSimStack::str();
+            string res = "Stack= " + ListSimStack<PII>::str();
             res += " LastPosMap= " + last_pos_map.str();
             return res;
         }

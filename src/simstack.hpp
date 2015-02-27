@@ -26,6 +26,8 @@ namespace MadOpt {
 
 class SimStack: public Stack {
     public:
+	SimStack(): dummy(0), _size(0), _max_size(0), data_i(0){}
+
         void doAdd(const Idx& nofelems);
         void doMull(); 
         double& lastG();
@@ -52,12 +54,12 @@ class SimStack: public Stack {
         string str();
 
     private:
-        double dummy=0;
+        double dummy;
         JacSimStack jac_stack;
         HessSimStack hess_stack;
-        Idx _size=0;
-        Idx _max_size=0;
-        Idx data_i=0;
+        Idx _size;
+        Idx _max_size;
+        Idx data_i;
 };
 }
 #endif

@@ -28,7 +28,8 @@ class Expr{
         Expr(){};
 
         //! move constructor
-        Expr(Expr&& a)=default;
+        Expr(Expr&& a);
+        //Expr(Expr&& a)=default;
 
         //! copy constructor
         Expr(const Expr& a)=default;

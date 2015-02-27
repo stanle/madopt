@@ -75,6 +75,7 @@ string to_string(vector<Idx> v);
 string to_string(vector<PII> v);
 string to_string(vector<double> v);
 
+#define FOREACH(elem, c) for(auto __it=c.begin(); __it!=c.end(); __it++){ auto& elem = *__it;
 
 }
 

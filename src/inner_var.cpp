@@ -34,7 +34,8 @@ InnerVar::InnerVar(double _lb,
         xi(xi), 
         _name(name), 
         type(type), 
-        sol(sol){
+        sol(sol), 
+	is_fixed(false){
             checkBounds();
         }
 

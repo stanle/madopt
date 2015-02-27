@@ -40,7 +40,7 @@ struct BonminModelImpl {
  
 }
 
-BonminModel::BonminModel(){
+BonminModel::BonminModel(): Model(){
     impl = new BonminModelImpl(this);
 }
 

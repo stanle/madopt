@@ -25,14 +25,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif(NOT CMAKE_BUILD_TYPE)
 
-if (CUSTOM_INCLUDE)
-    include_directories( ${CUSTOM_INCLUDE} )
-endif()
-
-if (CUSTOM_LIBRARY)
-    link_directories( ${CUSTOM_LIBRARY} )
-endif()
-
 set(TEST_DIR tests)
 
 set(SRC_DIR src)
@@ -61,9 +53,25 @@ install(TARGETS madopt ARCHIVE DESTINATION lib)
 #
 #
 #
+if (CUSTOM_INCLUDE)
+    include_directories( ${CUSTOM_INCLUDE} )
+endif()
+
+if (CUSTOM_LIBRARY)
+    link_directories( ${CUSTOM_LIBRARY} )
+    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CUSTOM_LIBRARY})
+endif()
+
+#find_path(IPOPT_TNLP_PATH coin/IpTNLP.hpp)
+#
+#if (NOT IPOPT_TNLP_PATH)
+#    message(SEND_ERROR "ipopt includes not found")
+#endif()
+
 add_library(madopt_ipopt STATIC
     ${SRC_DIR}/ipopt_nlp.cpp
     ${SRC_DIR}/ipopt_model.cpp
+    ${CUSTOM_INCLUDE}/
     )
 
 install(TARGETS madopt_ipopt ARCHIVE DESTINATION lib)
@@ -113,8 +121,9 @@ find_library(BONMIN_LIB NAMES bonmin)
 
 if (BONMIN_LIB)
     set(CMAKE_REQUIRED_LIBRARIES ${BONMIN_LIB})
-
-    #check_cxx_source_compiles
+    if (CUSTOM_INCLUDE)
+        set(CMAKE_REQUIRED_INCLUDES ${CUSTOM_INCLUDE})
+    endif()
 
     CHECK_CXX_SOURCE_COMPILES("
         #include <coin/BonTMINLP.hpp> 
@@ -124,15 +133,7 @@ if (BONMIN_LIB)
         BONMIN_HAS_USER_INTERRUPT)
 
     if (NOT BONMIN_HAS_USER_INTERRUPT)
-        set(BONMIN_HAS_USER_INTERRUPT "-D BONMIN_HAS_USER_INTERRUPT")
-        set(CMAKE_CXX_FLAGS 
-            "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS} ${BONMIN_HAS_USER_INTERRUPT}")
-        set(CMAKE_CXX_FLAGS_DEBUG 
-            "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_DEBUG} ${BONMIN_HAS_USER_INTERRUPT}")
-        set(CMAKE_CXX_FLAGS_RELEASE 
-            "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_RELEASE} ${BONMIN_HAS_USER_INTERRUPT}")
-        set(CMAKE_CXX_FLAGS_PROFILE 
-            "${CXX_FLAGS_COM} ${CMAKE_CXX_FLAGS_PROFILE} ${BONMIN_HAS_USER_INTERRUPT}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D BONMIN_HAS_USER_INTERRUPT")
     endif()
 
     add_library(madopt_bonmin STATIC
@@ -141,6 +142,8 @@ if (BONMIN_LIB)
         )
 
     install(TARGETS madopt_bonmin ARCHIVE DESTINATION lib)
+else()
+    message("Bonmin library not found, building ipopt support only")
 endif()
 
 # Minitest
@@ -153,11 +156,9 @@ if (MINITEST)
     )
 
     target_link_libraries(minitest 
-        madopt 
-        madopt_ipopt
-        madopt_bonmin
-        bonmin
         ipopt
+        madopt_ipopt
+        madopt 
         ) 
 
 endif()

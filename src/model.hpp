@@ -32,6 +32,7 @@ namespace MadOpt {
 //! generic Model class, not for direct use hence the constructor is protected
 class Model {
     public:
+        Model(): show_solver(false), timelimit(-1), model_changed(false), obj(0){}
         virtual ~Model();
 
         //! starts the solver
@@ -184,10 +185,10 @@ class Model {
 
         //! enable/disable printing options of the solver, Overwrites! the
         //options
-        bool show_solver=false;
+        bool show_solver;
 
         //! timelimit, a negative value is interpreted as no time limit
-        double timelimit=-1;
+        double timelimit;
 
         const vector<InnerVar*>& getVars()const { return vars; }
 
@@ -203,7 +204,7 @@ class Model {
         CStack& getCStack(){ return cstack; }
 
     protected:
-        bool model_changed=false;
+        bool model_changed;
         vector<InnerVar*> vars;
 
     private:
@@ -211,7 +212,7 @@ class Model {
         vector<InnerConstraint*> constraints;
         CStack cstack;
         SimStack simstack;
-        InnerConstraint* obj=nullptr;
+        InnerConstraint* obj;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;
         Solution solution;
