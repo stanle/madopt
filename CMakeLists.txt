@@ -9,6 +9,8 @@ mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 INCLUDE (CheckCXXSourceCompiles)
 include(CheckCXXCompilerFlag)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 check_cxx_compiler_flag(-std=c++11 HAS_STDCPP11)
 if (HAS_STDCPP11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
