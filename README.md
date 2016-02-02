@@ -61,13 +61,6 @@ python setup.py build_ext --inplace
 Examples
 ========
 An example for the usage with **C++** can be found in [examples/get_started.cpp](examples/get_started.cpp)
-To compile and run the example one can use the simple cmake [file](examples/CMakeLists.txt) provided in the examples folder if, for example by running
-```
-cd examples
-cmake .
-make
-./get_started
-```
 
 An example for the usage with **python** can be found in [examples/get_started.py](examples/get_started.py). To run it call
 ```
