@@ -35,7 +35,7 @@ creates static libraries called **libmadopt.a**, **libmadopt_ipopt.a** and **lib
 If ipopt/bonmin is installed in a custom location, one can provide the **absolute** path to the ipopt/bonmin libraries and headers via
 
 ```
-cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDES=/path/to/bonmin/includes ..
+cmake -DCUSTOM_LIBRARY=/path/to/bonmin/libs -DCUSTOM_INCLUDE=/path/to/bonmin/includes ..
 ```
 
 To be able to use the C++ version of madopt one has to install the libraries by running
