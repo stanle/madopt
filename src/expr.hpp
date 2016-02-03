@@ -174,6 +174,10 @@ Expr sin(const Expr& a);
 //! \sa
 Expr cos(const Expr& a);
 //! \sa
+Expr tan(const Expr& a);
+//! \sa
+Expr sqrt(const Expr& a);
+//! \sa
 std::ostream &operator<<(std::ostream &os, const Expr &a);
 
 } /* madopt */ 
