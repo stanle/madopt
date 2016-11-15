@@ -97,6 +97,11 @@ class Model {
          */
         Var addBVar(double init, string name);
 
+        /*! \brief add a new binary variable to the model,
+         * @param[in] name name of the variable
+         */
+        Var addBVar(string name);
+
         //Param stuff
         /*! \brief add a new parameter to the model,
          * @param[in] value value

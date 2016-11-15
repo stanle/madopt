@@ -88,6 +88,10 @@ Var Model::addBVar(double init, string name){
     return addVar(0, 1, VarType::BINARY, init, name);
 }
 
+Var Model::addBVar(string name){
+    return addBVar(0, name);
+}
+
 //Constraint stuff
 //
 //
