@@ -35,6 +35,10 @@ class Model {
     public:
         Model(): show_solver(false), timelimit(-1), model_changed(false),
                  obj(new InnerConstraint(Expr(0), 0, 0, hess_pos_map, simstack)){}
+
+  Model(Model const &) = delete;
+  Model(Model&&) = delete;
+
         virtual ~Model();
 
         //! starts the solver
