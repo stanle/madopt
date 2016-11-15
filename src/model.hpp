@@ -33,7 +33,8 @@ namespace MadOpt {
 //! generic Model class, not for direct use hence the constructor is protected
 class Model {
     public:
-        Model(): show_solver(false), timelimit(-1), model_changed(false), obj(0){}
+        Model(): show_solver(false), timelimit(-1), model_changed(false),
+                 obj(new InnerConstraint(Expr(0), 0, 0, hess_pos_map, simstack)){}
         virtual ~Model();
 
         //! starts the solver
