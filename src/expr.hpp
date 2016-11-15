@@ -25,7 +25,12 @@ namespace MadOpt {
 //! expression class
 class Expr{
     public:
-        Expr(){};
+
+  //! empty constructor which represents the number 0
+        Expr(); // for python interface
+
+  //! fake empty constructor for the Var and Param classes, it does not add any operator
+        Expr(bool x, bool y);
 
         //! move constructor
         Expr(Expr&& a);
@@ -68,7 +73,7 @@ class Expr{
         Expr& operator+=(const Expr& a);
 
         //! \sa
-        Expr& operator+=(const Expr&& a) ;                                
+        Expr& operator+=(const Expr&& a);
 
         //! \sa
         Expr& operator*=(const Expr& a);
@@ -90,7 +95,7 @@ class Expr{
         friend Expr tan(const Expr& a);
         friend Expr sqrt(const Expr& a);
 
-        string opsToString()const; 
+        string opsToString()const;
 
         Expr& mulEqual(const Expr& a); 
 

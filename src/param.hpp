@@ -27,8 +27,8 @@ class Param: public Expr{
     public:
         Param(){} // for python interface
 
-        Param(InnerParam* var){
-            ops.emplace_front(OP_PARAM_POINTER, var); 
+        Param(InnerParam* var): Expr(true, true){
+            ops.emplace_front(OP_PARAM_POINTER, var);
         }
 
         Param(const Expr& e): Expr(e){}

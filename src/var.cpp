@@ -21,7 +21,7 @@ namespace MadOpt {
 
 Var::Var(){}
 
-Var::Var(InnerVar* var){
+  Var::Var(InnerVar* var): Expr(true, true){
     ops.emplace_front(OP_VAR_POINTER, var); 
 }
 

@@ -19,6 +19,10 @@
 
 namespace MadOpt {
 
+Expr::Expr(): Expr(0){}
+
+Expr::Expr(bool x, bool y){}
+
 Expr::Expr(Expr&& other): ops(other.ops){}
 
 Expr::Expr(double constant){
