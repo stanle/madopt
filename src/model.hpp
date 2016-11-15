@@ -24,6 +24,7 @@
 #include "param.hpp"
 #include "constraint.hpp"
 #include "solution.hpp"
+#include "constraint_interface.hpp"
 
 namespace MadOpt {
 
@@ -131,11 +132,17 @@ class Model {
          */
         Constraint addConstr(const double lb, const Expr& expr);
 
+        /*! add new custom constraint
+        * expr
+        * \param[in] pointer to custom constraint, do not del mem on your own 
+        */
+        Constraint addConstr(ConstraintInterface* con);
+
         //Objective Stuff
         /*! set objective based on custom objective implementation that is
          * derived from InnerConstraint
          */
-        void setObj(InnerConstraint* constraint);
+        void setObj(ConstraintInterface* constraint);
 
         //! set objective based on Expr 
         void setObj(const Expr& expr);
@@ -209,10 +216,10 @@ class Model {
 
     private:
         vector<InnerParam*> params;
-        vector<InnerConstraint*> constraints;
+        vector<ConstraintInterface*> constraints;
         CStack cstack;
         SimStack simstack;
-        InnerConstraint* obj;
+        ConstraintInterface* obj;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;
         Solution solution;

@@ -27,7 +27,7 @@ int main(){
 
     //create BonminModel
     //MadOpt::BonminModel m;
-    
+
     // Options
     //
     //
@@ -89,7 +89,7 @@ int main(){
     // ub = upper bound, double
     //
     // add constraint of type:
-    // 
+    //
     // lb <= expr <= ub
     // m.addConstr(lb, expr, ub);
     //

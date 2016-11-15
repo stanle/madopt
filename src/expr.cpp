@@ -74,7 +74,8 @@ Expr& Expr::operator*=(const double& a){
 
 Expr Expr::operator+(const Expr& b)const {
     Expr tmp(*this);
-    tmp += b; return tmp; 
+    tmp += b; 
+    return tmp; 
 }
 
 Expr Expr::operator*(const Expr& b)const {

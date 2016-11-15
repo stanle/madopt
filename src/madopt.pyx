@@ -90,6 +90,14 @@ cdef extern from "model.hpp":
         Constraint_ addConstr(double, Expr_&, double)
         bool hasSolution()
 
+ctypedef double (*g_type)(void *param, void *g_data)
+
+cdef extern from "python_callback.hpp":
+    cdef cppclass PythonCallback:
+        PythonCallback(g_type gtype, void *g_data)
+
+cdef double callback_template(void *parameter, void *method):
+    return (<object>method)(<object>parameter)
 
 INFINITY = INF
 
@@ -261,6 +269,12 @@ cdef class Constraint:
     @property
     def lam(self):
         return self.constraint_.lam()
+
+cdef class CustomConstraint:
+    def __init__(self, g_func, jac_func, hess_func):
+        self.g_func = g_func
+        self.jac_func = jac_func
+        self.hess_func = hess_func
 
 cdef class Model:
     cdef Model_* model_
