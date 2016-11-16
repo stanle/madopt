@@ -27,7 +27,6 @@ struct BonminModelImpl {
         Bapp = new Bonmin::BonminSetup();
         Bapp->initializeOptionsAndJournalist();
         bonmin_callback = new BonminUserClass(model);
-    
     }
 
     ~BonminModelImpl(){
@@ -37,7 +36,6 @@ struct BonminModelImpl {
     Bonmin::BonminSetup* Bapp;
     Ipopt::SmartPtr<Bonmin::TMINLP> bonmin_callback;
 };
- 
 }
 
 BonminModel::BonminModel(): Model(){

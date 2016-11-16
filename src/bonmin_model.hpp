@@ -28,6 +28,10 @@ class BonminModel: public Model {
         //! constructs a new BonminModel
         BonminModel();
         ~BonminModel();
+
+  BonminModel(BonminModel const &) = delete;
+  BonminModel(BonminModel&&) = delete;
+
         void setStringOption(std::string key, std::string value);
         void setNumericOption(std::string key, double value);
         void setIntegerOption(std::string key, int value);

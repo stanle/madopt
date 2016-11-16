@@ -27,6 +27,10 @@ class IpoptModel: public Model {
     public:
         IpoptModel();
         ~IpoptModel();
+
+  IpoptModel(IpoptModel const &) = delete;
+  IpoptModel(IpoptModel&&) = delete;
+
         void setStringOption(std::string key, std::string value);
         void setNumericOption(std::string key, double value);
         void setIntegerOption(std::string key, int value);
