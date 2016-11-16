@@ -19,6 +19,10 @@
 
 namespace MadOpt {
 
+Expr::Expr(): Expr(0){}
+
+Expr::Expr(bool x, bool y){}
+
 Expr::Expr(Expr&& other): ops(other.ops){}
 
 Expr::Expr(double constant){
@@ -74,7 +78,8 @@ Expr& Expr::operator*=(const double& a){
 
 Expr Expr::operator+(const Expr& b)const {
     Expr tmp(*this);
-    tmp += b; return tmp; 
+    tmp += b; 
+    return tmp; 
 }
 
 Expr Expr::operator*(const Expr& b)const {

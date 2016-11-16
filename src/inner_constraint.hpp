@@ -20,6 +20,7 @@
 #include <vector>
 #include "common.hpp"
 #include "array.hpp"
+#include "constraint_interface.hpp"
 
 namespace MadOpt {
 
@@ -30,7 +31,7 @@ class Stack;
 class CStack;
 class SimStack;
 
-class InnerConstraint{
+class InnerConstraint: public ConstraintInterface{
     public:
         InnerConstraint(const Expr& expr, const double _lb, const double _ub,
                 HessPosMap& hess_pos_map, SimStack& stack);

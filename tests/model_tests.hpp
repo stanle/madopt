@@ -18,7 +18,14 @@
 using namespace MadOpt;
 
 class ModelTest: public CxxTest::TestSuite {
-    public:
+public:
+  void testNoObj(){
+    TestModel m;
+    m.addVar(0, 1, 1, "x");
+
+
+  }
+
 
         void testModelExp(){
            TestModel m;

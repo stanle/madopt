@@ -80,6 +80,9 @@ public:
   virtual bool get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types);
 
   virtual bool get_constraints_linearity(Index m, Ipopt::TNLP::LinearityType* const_types){
+    // for (int i=0; i<m; i++)
+      // const_types[i] = Ipopt::TNLP::LINEAR;
+    // return true;
       return false;
   }
 

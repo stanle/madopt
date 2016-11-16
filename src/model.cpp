@@ -113,10 +113,15 @@ Constraint Model::addConstr(const double lb, const Expr& expr, const double ub){
     simstack.setXSize(nx());
     auto con = new InnerConstraint(expr, lb, ub, hess_pos_map, simstack);
     cstack.resize(simstack);
-    constraints.push_back(con);
-    model_changed = true;
-    TRACE_END;
-    return Constraint(this, constraints.size()-1);
+    return addConstr(con);
+}
+
+Constraint Model::addConstr(ConstraintInterface* con) {
+  TRACE_START;
+  constraints.push_back(con);
+  model_changed = true;
+  TRACE_END;
+  return Constraint(this, constraints.size()-1);
 }
 
 Constraint Model::addEqConstr(const Expr& expr, const double equal){
