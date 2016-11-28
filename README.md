@@ -14,7 +14,7 @@ Madopt implements (c++):
 - a python wrapper using [cython](http://cython.org/).
 
 Supported Operators are 
-+, +=, *, *=, /, -, pow, sin, cos, tan, sqrt.
++, +=, *, *=, /, -, pow, sin, cos, tan, sqrt, ln, log2.
 
 Dependencies
 ============
