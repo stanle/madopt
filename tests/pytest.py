@@ -19,6 +19,9 @@ x = dict()
 for i in range(N):
     x[i] = model.addVar(lb=-1.5, ub=0, init=-0.5, name="x"+str(i))
 
+a = madopt.ln(x[0])
+a = madopt.log2(x[0])
+
 obj = madopt.Expr(0)
 for i in range(N):
     obj += (x[N-i-1] - 1)**2

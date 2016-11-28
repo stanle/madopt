@@ -40,6 +40,10 @@ cdef extern from "model.hpp":
 
     cdef Expr_ ecos "MadOpt::cos" (Expr_&)
 
+    cdef Expr_ eln "MadOpt::ln" (Expr_&)
+
+    cdef Expr_ elog2 "MadOpt::log2" (Expr_&)
+
     cdef Expr_ epow "MadOpt::pow" (Expr_&, double)
 
     cdef cppclass Var_ "MadOpt::Var"(Expr_):
@@ -194,6 +198,15 @@ def cos(Expr ip):
     e.expr_ = ecos(ip.expr_)
     return e
 
+def ln(Expr ip):
+    e = Expr()
+    e.expr_ = eln(ip.expr_)
+    return e
+
+def log2(Expr ip):
+    e = Expr()
+    e.expr_ = elog2(ip.expr_)
+    return e
 
 cdef class Var(Expr):
     cdef Var_ getVar(self):
