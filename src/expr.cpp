@@ -33,31 +33,35 @@ Expr::Expr(int constant){
     ops.emplace_front(OP_CONST, (double)constant);
 }
 
-Expr::Expr(const Expr& a, const double& b){ 
-    if (b == 0){
+  Expr::Expr(const Expr& a, const double& b, OPType op){ 
+    if (op == OP_POW){
+      if (b == 0){
         ops.emplace_front(OP_CONST, 1.);
-    } else if (b == 1){
+      } else if (b == 1){
         *this = a;
-    } else {
+      } else {
         *this = a;
         if (getType() == OP_POW){
-            front().modifyValue(b, true);
+          front().modifyValue(b, true);
         } else {
-            ops.emplace_front(OP_POW, b); 
+          ops.emplace_front(OP_POW, b);
         }
+      }
+    } else {
+      throw MadOptError("wrong use of Expression type a_b_op");
     }
 }
 
-Expr::Expr(const Expr& a, int op){ 
-    if (op != OP_SIN && op != OP_COS && op != OP_TAN)
-        throw MadOptError("wrong use of Expression type");
-    *this = a; 
-    ops.emplace_front(op); 
+Expr::Expr(const Expr& a, int op){
+    if (op != OP_SIN && op != OP_COS && op != OP_TAN && op != OP_LN && op != OP_LOG2)
+        throw MadOptError("wrong use of Expression type a_op");
+    *this = a;
+    ops.emplace_front(op);
 }
 
 Expr::Expr(const Expr& a, OPType op){ 
-    if (op != OP_SIN && op != OP_COS && op != OP_TAN)
-        throw MadOptError("wrong use of Expression type");
+  if (op != OP_SIN && op != OP_COS && op != OP_TAN && op != OP_LN && op != OP_LOG2)
+        throw MadOptError("wrong use of Expression type a_op");
     *this = a; 
     ops.emplace_front(op); 
 }
@@ -147,7 +151,7 @@ Expr operator-(const Expr& a, const double& b){
 }
 
 Expr pow(const Expr& a, const double& b){
-    return Expr(a, b);
+  return Expr(a, b, OP_POW);
 }
 
 Expr operator/(const Expr& a, const Expr& b){
@@ -168,6 +172,14 @@ Expr tan(const Expr& a){
 
 Expr sqrt(const Expr& a){
     return pow(a, 0.5);
+}
+
+Expr ln(const Expr& a){
+  return Expr(a, OP_LN);
+}
+
+Expr log2(const Expr& a){
+   return Expr(a, OP_LOG2);
 }
 
 std::ostream &operator<<(std::ostream &os, const Expr &a){
@@ -292,6 +304,10 @@ string Expr::toString(list<Operator>::const_iterator& iter)const {
         case OP_POW:
           res = toStringEnclosed(++iter);
             return res + "^" + doubleToString(op.getValue());
+    case OP_LN:
+      return "ln(" + toString(++iter) + ")";
+    case OP_LOG2:
+      return "log2(" + toString(++iter) + ")";
         case OP_COS:
             return "cos(" + toString(++iter) + ")";
         case OP_SIN:
@@ -310,7 +326,7 @@ string Expr::toString(list<Operator>::const_iterator& iter)const {
 string Expr::toStringEnclosed(list<Operator>::const_iterator& iter)const{
     const OPType& t = iter->getType();
     if (t == OP_VAR_POINTER || t == OP_PARAM_POINTER ||
-            t == OP_CONST || t == OP_MUL || t == OP_SIN || t == OP_COS || t == OP_TAN)
+            t == OP_CONST || t == OP_MUL || t == OP_SIN || t == OP_COS || t == OP_TAN || t == OP_LOG2 || t == OP_LN)
         return toString(iter);
     return "(" + toString(iter) + ")";
 }
@@ -387,6 +403,10 @@ double Expr::x(list<Operator>::const_iterator& iter)const {
             return op.getValue()*x(++iter);
         case OP_POW:
             return std::pow(x(++iter), op.getValue());
+    case OP_LN:
+      return std::log(x(++iter));
+    case OP_LOG2:
+      return std::log2(x(++iter));
         case OP_PARAM_POINTER:
             return op.getIParam()->value();
         case OP_COS:

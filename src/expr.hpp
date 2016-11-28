@@ -48,7 +48,7 @@ class Expr{
         //! \brief construct constant expression,
         Expr(int constant);
 
-        Expr(const Expr& a, const double& b);
+  Expr(const Expr& a, const double& b, OPType op);
 
         Expr(const Expr& a, int op);
 
@@ -182,6 +182,10 @@ Expr cos(const Expr& a);
 Expr tan(const Expr& a);
 //! \sa
 Expr sqrt(const Expr& a);
+//! \sa
+Expr log2(const Expr& a);
+//! \sa
+Expr ln(const Expr& a);
 //! \sa
 std::ostream &operator<<(std::ostream &os, const Expr &a);
 

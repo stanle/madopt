@@ -248,6 +248,21 @@ class ExprTest: public CxxTest::TestSuite {
             Tes(2*sin(a), "2*sin(a)", OP_MUL); 
         }
 
+  void testLN(){
+    TestModel m;
+    Var a = m.addVar("a");
+    Tes(ln(a), "ln(a)", OP_LN); 
+    Tes(2*ln(a), "2*ln(a)", OP_MUL); 
+  }
+
+
+  void testLOG2(){
+    TestModel m;
+    Var a = m.addVar("a");
+    Tes(log2(a), "log2(a)", OP_LOG2); 
+    Tes(2*log2(a), "2*log2(a)", OP_MUL); 
+  }
+
         void testTutorial(){
            TestModel m;
             Var a = m.addVar("a");

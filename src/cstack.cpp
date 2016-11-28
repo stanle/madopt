@@ -83,6 +83,7 @@ void CStack::doUnaryOp(const double& jac_value, const double& hess_value){
             hess_stack.push(stack[i]*stack[k]*hess_value);
     hess_stack.merge(2);
     jac_stack.mulAllLast(jac_value);
+    TRACE_END;
 }
 
 void CStack::emplace_back(const Idx& id){

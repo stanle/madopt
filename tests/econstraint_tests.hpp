@@ -130,6 +130,18 @@ class EConstraintTest: public CxxTest::TestSuite {
             Tes(cos(2*a), {3}, cos(2*3), {0}, {-2*sin(6)}, {PII(0,0)}, {-4*cos(6)});
         }
 
+  void testLN(){
+    TestModel m;
+    Var a = m.addVar("a");
+    Tes(ln(2*a), {3}, std::log(2*3), {0}, {2.0/6.0}, {PII(0,0)}, {-1.0/9.0});
+  }
+
+  void testLOG2(){
+    TestModel m;
+    Var a = m.addVar("a");
+    Tes(log2(2*a), {3}, std::log2(2*3), {0}, {2.0/(6*log(2))}, {PII(0,0)}, {-2.0*2.0*log(2)/pow(2*3*log(2), 2)});
+  }
+
         void testCOS2(){
             TestModel m;
             Var a = m.addVar("a");

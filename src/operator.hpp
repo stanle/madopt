@@ -30,6 +30,8 @@
 #define OP_SIN 6
 #define OP_COS 7
 #define OP_TAN 8
+#define OP_LOG2 9
+#define OP_LN 10
 
 #define OP_VAR_IDX 20
 #define OP_MUL_CONST 21
@@ -131,7 +133,7 @@ class Operator{
         uintptr_t value;
 
         void checkNone()const {
-            if (type != OP_SIN && type != OP_COS && type != OP_TAN)
+            if (type != OP_SIN && type != OP_COS && type != OP_TAN && type != OP_LOG2 && type != OP_LN)
                 throw MadOptError("wrong use of Expression type for none");
         }
 

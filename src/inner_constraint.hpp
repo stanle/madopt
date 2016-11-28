@@ -129,6 +129,9 @@ class InnerConstraint: public ConstraintInterface{
         void caseCOS(Stack&);
 
         void caseTAN(Stack&);
+
+  void caseLOG2(Stack&);
+  void caseLN(Stack&);
 };
 }
 #endif

@@ -78,9 +78,11 @@ InnerConstraint::InnerConstraint(
                 || type == OP_PARAM_POINTER){
             data.push_back(op.getData());
         } else {
-            ASSERT(type == OP_COS 
-                    || type == OP_SIN 
-                    || type == OP_TAN, 
+            ASSERT(type == OP_COS
+                    || type == OP_SIN
+                    || type == OP_TAN
+                   || type == OP_LOG2
+                   || type == OP_LN,
                     "unknown type", type);
         }
     }
@@ -196,6 +198,8 @@ void InnerConstraint::computeFinalStack(Stack& stack){
             MADOPTCASE(SIN)
             MADOPTCASE(COS)
             MADOPTCASE(TAN)
+              MADOPTCASE(LOG2)
+              MADOPTCASE(LN)
 
             default:
                 throw MadOptError("unknown operator type found");
@@ -275,9 +279,29 @@ void InnerConstraint::caseTAN(Stack& stack){
    TRACE_START;
     double& g = stack.lastG();
     double v1 = 1 + std::pow(g, 2);
-    g = ::tan(g);
+    g = std::tan(g);
     stack.doUnaryOp(v1, -g);
    TRACE_END;
+}
+
+void InnerConstraint::caseLOG2(Stack& stack){
+  TRACE_START;
+  double& g = stack.lastG();
+  double v1 = 1.0 / (g * std::log(2));
+  double hess = -std::log(2) * std::pow(v1, 2);
+  g = std::log2(g);
+  stack.doUnaryOp(v1, hess);
+  TRACE_END;
+}
+
+void InnerConstraint::caseLN(Stack& stack){
+  TRACE_START;
+  double& g = stack.lastG();
+  double v1 = 1.0/g;
+  double hess = - std::pow(v1, 2);
+  g = std::log(g);
+  stack.doUnaryOp(v1, hess);
+  TRACE_END;
 }
 
 }
