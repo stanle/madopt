@@ -20,12 +20,20 @@
 using namespace MadOpt;
 
 class IpoptModelTest: public CxxTest::TestSuite {
-    public:
+public:
   void testNoObj(){
     IpoptModel m;
     Var a = m.addVar(0, 1, 0.5, "a");
     m.addConstr(1, a, 3);
     m.solve();
+  }
+
+  void testMemoryLeak(){
+    IpoptModel m;
+    // Var a = m.addVar(0, 1, 0.5, "a");
+    // m.addConstr(1, a, 3);
+    // m.setObj(a);
+    // m.solve();
   }
 
         void testSimple(){

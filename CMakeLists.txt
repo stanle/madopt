@@ -6,6 +6,8 @@ set(VERSION_MINOR   3   CACHE STRING "Project minor version number.")
 set(VERSION_PATCH   1   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
+set(COIN_LIBS CoinUtils)
+
 INCLUDE (CheckCXXSourceCompiles)
 include(CheckCXXCompilerFlag)
 
@@ -193,6 +195,7 @@ if(CXXTEST_FOUND)
     target_link_libraries(unittest_madopt 
         ${BONMIN_MADOPT_LIB}
         ${BONMIN_LIB}
+        ${COIN_LIBS} 
         madopt
         madopt_ipopt
         ipopt

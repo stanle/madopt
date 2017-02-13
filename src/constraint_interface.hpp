@@ -29,7 +29,8 @@ class CStack;
 class SimStack;
 
 class ConstraintInterface{
-  public:
+public:
+  virtual ~ConstraintInterface() {}
     virtual double lb()= 0;
     virtual void lb(double v) = 0;
     virtual double ub() = 0;
