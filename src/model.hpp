@@ -223,6 +223,7 @@ class Model {
     protected:
         bool model_changed;
         vector<InnerVar*> vars;
+  Solution solution;
 
     private:
         vector<InnerParam*> params;
@@ -232,7 +233,6 @@ class Model {
         ConstraintInterface* obj;
         vector<Idx> obj_jac_map;
         HessPosMap hess_pos_map;
-        Solution solution;
 
         Var addVar(double lb, double ub, VarType type, double init, string name);
 };

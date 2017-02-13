@@ -43,6 +43,7 @@ class Solution{
             OUT_OF_MEMORY,
             INTERNAL_ERROR,
             UNASSIGNED,
+            UNSOLVED_ERROR,
             NO_RUN=-1
         };
 
@@ -72,6 +73,11 @@ class Solution{
 
         //! solver status
         SolverStatus status()const ;
+
+  //! set Solver status
+  void setStatus(SolverStatus status) {
+    _status = status;
+  }
 
         //! objective value
         double obj_value()const ;

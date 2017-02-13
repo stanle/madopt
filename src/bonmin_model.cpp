@@ -57,9 +57,19 @@ void BonminModel::solve(){
         setStringOption("sb", "yes");
     }
 
-    impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
-    Bonmin::Bab bb;
-    bb(impl->Bapp);
+    try {
+      impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
+      Bonmin::Bab bb;
+      bb(impl->Bapp);
+
+    }
+    catch(Bonmin::TNLPSolver::UnsolvedError &E) {
+      solution.setStatus(Solution::SolverStatus::UNSOLVED_ERROR);
+    }
+
+    // impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
+    // Bonmin::Bab bb;
+    // bb(impl->Bapp);
 
     model_changed = false;
 }
