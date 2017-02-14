@@ -58,18 +58,20 @@ void BonminModel::solve(){
     }
 
     try {
-      impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
-      Bonmin::Bab bb;
-      bb(impl->Bapp);
-
+        impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
+        Bonmin::Bab bb;
+        bb(impl->Bapp);
+    }
+    catch(Bonmin::TNLPSolver::UnsolvedError *E) {
+        solution.setStatus(Solution::SolverStatus::UNSOLVED_ERROR);
+        delete E;
     }
     catch(Bonmin::TNLPSolver::UnsolvedError &E) {
-      solution.setStatus(Solution::SolverStatus::UNSOLVED_ERROR);
+        solution.setStatus(Solution::SolverStatus::UNSOLVED_ERROR);
     }
-
-    // impl->Bapp->initialize(GetRawPtr(impl->bonmin_callback));
-    // Bonmin::Bab bb;
-    // bb(impl->Bapp);
+    // Other possible exceptions we may want to catch here:
+    // OsiTMINLPInterface::SimpleError &E
+    // CoinError &E
 
     model_changed = false;
 }
