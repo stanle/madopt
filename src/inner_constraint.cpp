@@ -96,7 +96,7 @@ InnerConstraint::InnerConstraint(
     //for (auto& p : hess_entries){
         auto it = hess_pos_map.find(p);
         if (it == hess_pos_map.end())
-            hess_pos_map[p] = hess_pos_map.size() - 1;
+            hess_pos_map[p] = hess_pos_map.size();
         hess_map.push_back(hess_pos_map[p]);
     }
     hess.resize(hess_map.size());
