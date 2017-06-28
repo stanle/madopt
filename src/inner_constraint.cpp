@@ -94,9 +94,7 @@ InnerConstraint::InnerConstraint(
     vector<PII> hess_entries = stack.getHessEntries();
     FOREACH(p, hess_entries)
     //for (auto& p : hess_entries){
-        auto it = hess_pos_map.find(p);
-        if (it == hess_pos_map.end())
-            hess_pos_map[p] = hess_pos_map.size();
+        hess_pos_map.insert({p, hess_pos_map.size()}); // Only inserts if new.
         hess_map.push_back(hess_pos_map[p]);
     }
     hess.resize(hess_map.size());
