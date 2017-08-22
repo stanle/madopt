@@ -162,22 +162,22 @@ void InnerConstraint::setEvals(CStack& stack){
 
 const double& InnerConstraint::getNextValue(Idx& idx){
     ASSERT_LE(idx, data.size()-1);
-    return reinterpret_cast<const double&>(data[idx++]);
+    return data[idx++].d;
 }
 
 Idx InnerConstraint::getNextCounter(Idx& idx){
     ASSERT_LE(idx, data.size()-1);
-    return data[idx++];
+    return data[idx++].idx;
 }
 
 const Idx& InnerConstraint::getNextPos(Idx& idx){
     ASSERT_LE(idx, data.size()-1);
-    return (reinterpret_cast<InnerVar*>(data[idx++]))->getPos();
+    return (data[idx++].iVar)->getPos();
 }
 
 const double& InnerConstraint::getNextParamValue(Idx& idx){
     ASSERT_LE(idx, data.size()-1);
-    return (reinterpret_cast<InnerParam*>(data[idx++]))->value();
+    return (data[idx++].iParam)->value();
 }
 
 #define MADOPTCASE(a) case OP_##a: case##a(stack); break;
