@@ -17,7 +17,9 @@ import signal
 from libcpp.string cimport string
 from libcpp cimport bool
 
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 
 cdef extern from "model.hpp":
     cdef cppclass MadOptError:
