@@ -17,6 +17,8 @@ import signal
 from libcpp.string cimport string
 from libcpp cimport bool
 
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 cdef extern from "model.hpp":
     cdef cppclass MadOptError:
         pass 
@@ -293,7 +295,6 @@ cdef class Model:
     cdef Model_* model_
 
     def __init__(self, timelimit=-1, show_solver=False):
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.model_.show_solver = show_solver
         self.model_.timelimit = timelimit
 
