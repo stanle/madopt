@@ -21,6 +21,7 @@
 #include "common.hpp"
 #include "array.hpp"
 #include "constraint_interface.hpp"
+#include "value.hpp"
 
 namespace MadOpt {
 
@@ -90,7 +91,7 @@ class InnerConstraint: public ConstraintInterface{
 
         vector<OPType> operators;
 
-        vector<uintptr_t> data;
+        vector<Value> data;
 
         double g;
 

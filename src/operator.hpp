@@ -20,6 +20,7 @@
 #include "inner_var.hpp"
 #include "inner_param.hpp"
 #include "exceptions.hpp"
+#include "value.hpp"
 
 #define OP_VAR_POINTER 0
 #define OP_CONST 1
@@ -44,19 +45,16 @@ typedef char OPType;
 class Operator{
     public:
 
-        Operator(OPType t, InnerVar* var):type(t){ 
+        Operator(OPType t, InnerVar* var):type(t),value(var){ 
             checkVarPointer();
-            value = reinterpret_cast<uintptr_t>(var); 
         }
 
-        Operator(OPType t, InnerParam* var):type(t){ 
+        Operator(OPType t, InnerParam* var):type(t),value(var){ 
             checkParam();
-            value = reinterpret_cast<uintptr_t>(var); 
         }
 
-        Operator(OPType t, double v): type(t){ 
+        Operator(OPType t, double v): type(t),value(v){
             checkDouble();
-            setValue(v); 
         }
 
         Operator(OPType t, Idx p): type(t), value(p){
@@ -73,7 +71,7 @@ class Operator{
             checkNone();
         }
 
-        const uintptr_t& getData() const {
+        const Value& getData() const {
             return value;
         }
 
@@ -83,37 +81,37 @@ class Operator{
 
         const Idx getIndex()const { 
             checkVarIdx();
-            return value; 
+            return value.idx; 
         }
 
         const Idx getCounter()const { 
             checkCounter();
-            return value; 
+            return value.idx; 
         }
 
         double getValue()const { 
             checkDouble();
-            return reinterpret_cast<const double&>(value); 
+            return value.d;
         }
 
         InnerVar* getIVar()const { 
             checkVarPointer();
-            return reinterpret_cast<InnerVar*>(value); 
+            return value.iVar; 
         }
 
         InnerParam* getIParam()const { 
             checkParam();
-            return reinterpret_cast<InnerParam*>(value); 
+            return value.iParam; 
         }
 
         void setValue(double v){ 
             checkDouble();
-            value = *reinterpret_cast<uintptr_t*>(&v); 
+            value.d = v; 
         }
 
         void addToCounter(Idx v){ 
             checkCounter();
-            value += v; 
+            value.idx += v;
         }
 
         void modifyValue(double v, bool op){
@@ -124,13 +122,13 @@ class Operator{
 
         string toString()const {
             return std::to_string((long long int)type) + 
-                ": c=" + std::to_string((long long unsigned int)value) 
+                ": c=" + std::to_string((long long unsigned int)value.i) 
                 + " v=" + std::to_string((long double)getValue());
         }
 
     private:
         OPType type;
-        uintptr_t value;
+        Value value;
 
         void checkNone()const {
             if (type != OP_SIN && type != OP_COS && type != OP_TAN && type != OP_LOG2 && type != OP_LN)
