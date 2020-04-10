@@ -54,6 +54,7 @@ class ListSimStack{
             ASSERT_BETWEEN(1, last_start, stack.size());
             for (Idx i=stack.size()-1; i>=last_start; i--){
                 auto& elem = stack[i];
+		TRACE("Stack element=", i, "element:", "id=", elem.id, "conflict=", elem.conflict);
                 if (prev_start <= elem.conflict){
                     (*conflicts)[conflict_counter_pos]++;
                     ASSERT_LE(1, (*conflicts)[conflict_counter_pos]);
@@ -65,10 +66,11 @@ class ListSimStack{
                     TRACE("ins conf", 
                             "counter=", (*conflicts)[conflict_counter_pos], 
                             "to=", elem.conflict, 
-                            "form=", i, 
+                            "from=", i,
                             "nof confs=", conflicts->size());
                     setLastStackPos(elem.id, elem.conflict);
                     if (stack.size() != i){
+			TRACE("moving last element");
                         elem = stack.pop();
                         setLastStackPos(elem.id, i);
                     }
