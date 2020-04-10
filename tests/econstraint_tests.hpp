@@ -300,5 +300,11 @@ class EConstraintTest: public CxxTest::TestSuite {
 
             Tes(term, x, g, jac_entries, jac, hess_entries, hess);
         }
+        
+	void testXimesXTimesX(){
+            TestModel m;
+            Var x = m.addVar("x");
+            Tes(x*x*x, {1}, 1, {0}, {3}, {PII(0,0)}, {6});
+        }
 };
 
