@@ -25,64 +25,66 @@ class EConstraintTest: public CxxTest::TestSuite {
         void Tes(Expr exp, 
                 const vector<double> x,
                 const double g,
-                const vector<Idx> jac_entries, 
-                const vector<double> jac,
-                const vector<PII> hess_entries={}, 
-                const vector<double> hess={}, 
+                const vector<Idx> expected_jac_entries, 
+                const vector<double> expected_jac_values,
+                const vector<PII> expected_hess_entries={}, 
+                const vector<double> expected_hess_values={}, 
                 const double delta=0.000001
                 ){
             HessPosMap hess_pos_map;
             TestModel m;
             auto& simstack = m.getSimStack();
             simstack.setXSize(x.size());
-            InnerConstraint e(exp, 0, 0, hess_pos_map, simstack);
-
-            map<int, double> jacvm;
-            for (Idx i=0; i<jac_entries.size(); i++)
-                jacvm[jac_entries[i]] = jac[i];
-
-            map<PII, double> hessvm;
-            for (Idx i=0; i<hess_entries.size(); i++)
-                hessvm[hess_entries[i]] = hess[i];
-
-            const auto& ejace = e.getJacEntries();
-
+            InnerConstraint constraint(exp, 0, 0, hess_pos_map, simstack);
+            
             auto& cstack = m.getCStack();
             cstack.resize(simstack);
             cstack.setX(x.data());
-            e.setEvals(cstack);
+            constraint.setEvals(cstack);
 
-            map<int, double> ej;
-            auto ejac = e.getJac();
-
-            for (Idx i=0; i<e.getNNZ_Jac(); i++)
-                ej[ejace[i]] = ejac[i];
-
-            vector<double> ehess(hess_pos_map.size(), 0);
-            auto hess_map = e.getHessMap();
-            auto hess_res = e.getHess();
+            map<int, double> expected_jac_map;
+            for (Idx i=0; i<expected_jac_entries.size(); i++)
+                expected_jac_map[expected_jac_entries[i]] = expected_jac_values[i];
+	    const auto& real_jac_entries = constraint.getJacEntries();
+            map<int, double> real_jac_map;
+            auto real_jac_values = constraint.getJac();
+            for (Idx i=0; i<constraint.getNNZ_Jac(); i++)
+                real_jac_map[real_jac_entries[i]] = real_jac_values[i];
+            
+	    map<PII, double> expected_hess_map;
+            for (Idx i=0; i<expected_hess_entries.size(); i++)
+                expected_hess_map[expected_hess_entries[i]] = expected_hess_values[i];
+	    const auto& real_hess_entries_as_index = constraint.getHessMap();
+            vector<double> real_hess_values(hess_pos_map.size(), 0);
+            auto real_hess_values_for_index = constraint.getHess();
             int i=0;
-            for (auto x: hess_map)
-                ehess[x] += hess_res[i++];
-
-            map<PII, double> eh;
+            for (auto id: real_hess_entries_as_index)
+                real_hess_values[id] += real_hess_values_for_index[i++];
+            map<PII, double> real_hess_map;
             for (auto p: hess_pos_map)
-                eh[p.first] = ehess[p.second];
+                real_hess_map[p.first] = real_hess_values[p.second];
+            
+            TS_ASSERT_DELTA(constraint.getG(), g, delta);
 
-            TS_ASSERT_DELTA(e.getG(), g, delta);
-            TS_ASSERT_EQUALS(ej.size(), jacvm.size());
-            TS_ASSERT_EQUALS(eh.size(), hessvm.size());
+            TS_ASSERT_EQUALS(real_jac_entries.size(), real_jac_values.size());
+            TS_ASSERT_EQUALS(real_jac_entries.size(), expected_jac_entries.size());
+            TS_ASSERT_EQUALS(real_jac_values.size(), expected_jac_values.size());
+
+            TS_ASSERT_EQUALS(real_hess_entries_as_index.size(), real_hess_values_for_index.size());
+            TS_ASSERT_EQUALS(real_hess_entries_as_index.size(), expected_hess_entries.size());
+            TS_ASSERT_EQUALS(real_hess_values_for_index.size(), expected_hess_values.size());
+	    TS_ASSERT_EQUALS(hess_pos_map.size(), expected_hess_entries.size());
 
             if (delta == 0){
-                TS_ASSERT_EQUALS(ej, jacvm);
-                TS_ASSERT_EQUALS(eh, hessvm);
+                TS_ASSERT_EQUALS(real_jac_map, expected_jac_map);
+                TS_ASSERT_EQUALS(real_hess_map, expected_hess_map);
             } else {
 
-                for (auto p: ej)
-                    TS_ASSERT_DELTA(p.second, jacvm.at(p.first), delta);
+                for (auto p: real_jac_map)
+                    TS_ASSERT_DELTA(p.second, expected_jac_map.at(p.first), delta);
 
-                for (auto p: eh)
-                    TS_ASSERT_DELTA(p.second, hessvm.at(p.first), delta);
+                for (auto p: real_hess_map)
+                    TS_ASSERT_DELTA(p.second, expected_hess_map.at(p.first), delta);
             }
         }
 
