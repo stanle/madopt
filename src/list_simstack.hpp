@@ -69,9 +69,10 @@ class ListSimStack{
                             "from=", i,
                             "nof confs=", conflicts->size());
                     setLastStackPos(elem.id, elem.conflict);
-                    if (stack.size() != i){
-			TRACE("moving last element");
-                        elem = stack.pop();
+		    auto last_element = stack.pop();
+		    if (i < stack.size()) {
+			TRACE("moving last element to", i);
+			stack[i] = last_element;
                         setLastStackPos(elem.id, i);
                     }
                 }

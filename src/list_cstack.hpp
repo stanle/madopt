@@ -39,8 +39,10 @@ class ListCStack{
                 ASSERT_LE(to, from);
                 TRACE("sol conf", to, from);
                 stack[to] += stack[from];
-                if (from != stack.size())
-                    stack[from] = stack.pop();
+		auto last_element = stack.pop();
+		if (from < stack.size()) {
+		    stack[from] = last_element;
+		}
             }
             positions.pop(nofelems-1);
             TRACE_END;

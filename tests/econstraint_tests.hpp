@@ -308,5 +308,19 @@ class EConstraintTest: public CxxTest::TestSuite {
             Var x = m.addVar("x");
             Tes(x*x*x, {1}, 1, {0}, {3}, {PII(0,0)}, {6});
         }
+
+	void testIssue25Bug(){
+	    TestModel m;
+	    auto x = m.addVar(0.999, 1.001, 1.0, "x");
+	    auto e = x * pow(pow(x, 2) + x, -1); 
+	    Tes(e, {1}, 1 * pow(pow(1, 2) + 1, -1), {0}, {-0.25}, {PII(0,0)}, {0.25});
+	}
+
+	void testIssue25Bug2(){
+	    TestModel m;
+	    auto x = m.addVar(0.999, 1.001, 1.0, "x");
+	    auto e = pow(pow(x, 2) + x, -1) * x; 
+	    Tes(e, {1}, 1 * pow(pow(1, 2) + 1, -1), {0}, {-0.25}, {PII(0,0)}, {0.25});
+	}
 };
 
