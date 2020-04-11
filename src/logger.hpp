@@ -22,9 +22,9 @@
 
 namespace MadOpt {
  
-// #define ENABLE_TRACING
+//#define ENABLE_TRACING
 //#define ENABLE_VALGRIND_DEBUGGING
-// #define ENABLE_ASSERTS
+//#define ENABLE_ASSERTS
 
 template<typename TF>
 void write_debug_output( std::ostream & out, TF const& f ) {
@@ -164,11 +164,21 @@ struct tracer {
 #define ASSERT_XOR(a,b,...) do { \
         if (((a) && (b)) || (!(a) && !(b))) {} else {\
             PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
-            PRINT_STUFF_OUT(#a, " XOR " #b);\
+            PRINT_STUFF_OUT(#a, " XOR ", #b);\
             PRINT_STUFF_OUT(a, " XOR ", b);\
             PRINT_STUFF_OUT(__VA_ARGS__);\
             abort();\
         }\
+    } while(0)
+
+#define ASSERT_UNIQUEELEMENTS(a,...) do { \
+	if (number_of_unique_elements(a) != a.size()) {\
+            PRINT_STUFF_OUT("*** ASSERT FAILED ***");\
+            PRINT_STUFF_OUT(#a, " does not have unique elements");\
+            PRINT_STUFF_OUT(to_string(a));\
+            PRINT_STUFF_OUT(__VA_ARGS__);\
+            abort();\
+	} \
     } while(0)
 
 #define DEBUG_CODE(a) a
@@ -182,6 +192,7 @@ struct tracer {
 #define ASSERT_IF(...)
 #define ASSERT_XOR(...)
 #define ASSERT_BETWEEN(...)
+#define ASSERT_UNIQUEELEMENTS(...)
 #define DEBUG_CODE(a)
 #endif
 

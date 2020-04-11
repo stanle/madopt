@@ -96,6 +96,7 @@ vector<Idx> SimStack::getJacEntries(){
     ASSERT_UEQ(pos.size(), 0);
     for (Idx i=pos.back(); i<stack.size(); i++)
         res.push_back(stack[i].id);
+    ASSERT_UNIQUEELEMENTS(res);
     TRACE_END;
     return res;
 }
@@ -108,6 +109,7 @@ vector<PII> SimStack::getHessEntries(){
     ASSERT_UEQ(pos.size(), 0);
     for (Idx i=pos.back(); i<stack.size(); i++)
         res.push_back(stack[i].id);
+    ASSERT_UNIQUEELEMENTS(res);
     TRACE_END;
     return res;
 }

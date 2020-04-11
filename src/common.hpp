@@ -25,6 +25,7 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
+#include <set>
 
 namespace std {
     template <class T>
@@ -74,6 +75,11 @@ string to_string(Idx p);
 string to_string(vector<Idx> v);
 string to_string(vector<PII> v);
 string to_string(vector<double> v);
+
+template<typename T>
+unsigned int number_of_unique_elements(vector<T> v){
+	return std::set<T>(v.begin(), v.end()).size();
+}
 
 #define FOREACH(elem, c) for(auto __it=c.begin(); __it!=c.end(); __it++){ auto& elem = *__it;
 
